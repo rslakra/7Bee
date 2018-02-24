@@ -9,7 +9,10 @@ first time, you need bootstrap it. You can use either bootstrap or bootstrap.bat
 that 7Bee is Java application so you have to have Java version 7 or better installed.
 The Linux bootstrap script is more advanced and you need just run it and proceed with instructions. The Windows script may require
 adjust JDK path and also download <a href="http://www.jcraft.com/jsch/">JSCH</a> and place it in 3rdparty\jsch\lib\. 
-bee.jar will be created in <b>lib</b> directory after running bootstrap. However before using 7Bee, it is recommended to install it.
+bee.jar will be created in <b>lib</b> directory after running bootstrap.
+On Mac, you can run the 'makeBuild.sh' script for self build of 'bee.jar';
+
+However before using 7Bee, it is recommended to install it.
 <h2>Installation</h2>
 Obtain administrator privileges of your platform. <i>sudo</i> can be used on Linux, or <i>cmd</i> as Administrator on Windows.
 Type

@@ -328,7 +328,7 @@ Exception at compilation
            <function name="cp">
              <parameter value="lib\bee.jar"/>
              <parameter variable="bee lib"/>
-             <parameter value="3rdparty\jsch\lib\jsch-0.1.53.jar"/>
+             <parameter value="3rdparty\jsch\lib\jsch-0.1.54.jar"/>
              <parameter variable="bee lib"/>
            </function>
            <if>
@@ -405,7 +405,7 @@ Java home directory: </value>
                <function name="cp">
                     <parameter value="./lib/bee.jar"/>
                     <parameter variable="bee lib"/>
-                    <parameter value="./3rdparty/jsch/lib/jsch-0.1.53.jar"/>
+                    <parameter value="./3rdparty/jsch/lib/jsch-0.1.54.jar"/>
                     <parameter variable="bee lib"/>
                </function>
                <expression name="script name">

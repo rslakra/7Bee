@@ -74,7 +74,7 @@
        <parameter value="1.5"/>
        <parameter value="-d"/>
        <parameter value="&build_directory;" type="dir"/>
-       <parameter variable="java sources"/>>
+       <parameter variable="java sources"/>
       <onexit>
         <if>
           <expression>
