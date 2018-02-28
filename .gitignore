@@ -1,5 +1,2 @@
-lib/
-bin/
-src/java/org/bee/CompileStamp.java
+/bin
 *.class
-*.jar
