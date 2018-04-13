@@ -1,8 +1,7 @@
 <!-- Project 7Bee, DTD file of bee scrpt files 
-  Copyright (c) 2004-2015 Dmitriy Rogatkin   -->
-
+  Copyright (c) 2004-2018 Dmitriy Rogatkin, Rohtash Singh Lakra 
+-->
 <!ENTITY % PROJ_TYPE "build|test|run">
-
 <!ENTITY % VAR_TYPE "variable|file|directory|url|number|date|array|path|environment|property|repo_artifact">
 <!ENTITY % BLOCK_TYPE "then|else|case">
 <!ENTITY % YES_NO "yes|no">

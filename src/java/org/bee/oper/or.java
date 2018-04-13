@@ -24,44 +24,47 @@
  */
 
 package org.bee.oper;
+
 import java.util.Collection;
+
 import org.bee.util.InfoHolder;
+
 /**
  * @author dmitriy
  * 
- *  
+ * 
  */
 public class or {
-	public static InfoHolder < String, String, Boolean > doOperator(InfoHolder < String, String, Object > op1, InfoHolder < String, String, Object > op2) {
+	public static InfoHolder<String, String, Boolean> doOperator(InfoHolder<String, String, Object> op1, InfoHolder<String, String, Object> op2) {
 		Boolean result = toBoolean(op1) || toBoolean(op2);
-		return new InfoHolder < String, String, Boolean > ("or", result.toString(), result);
+		return new InfoHolder<String, String, Boolean>("or", result.toString(), result);
 	}
-
-	public static InfoHolder < String, String, Boolean > proceed(InfoHolder < String, String, Object > op1, InfoHolder < String, String, Object > op2) {
+	
+	public static InfoHolder<String, String, Boolean> proceed(InfoHolder<String, String, Object> op1, InfoHolder<String, String, Object> op2) {
 		return doOperator(op1, op2);
 	}
-
+	
 	protected static Boolean toBoolean(InfoHolder<String, String, Object> ih) {
 		if (ih == null)
 			return Boolean.FALSE;
 		Object o = ih.getType();
 		if (o != null) {
 			if (o instanceof Boolean)
-				return (Boolean)o;
-			else if (o instanceof Object[]) 				
-				return ((Object[])o).length > 0;
+				return (Boolean) o;
+			else if (o instanceof Object[])
+				return ((Object[]) o).length > 0;
 			else if (o instanceof Collection)
-				return ((Collection)o).size() >0;
+				return ((Collection) o).size() > 0;
 		}
 		o = ih.getValue();
 		if (o == null)
 			return Boolean.FALSE;
 		if (o instanceof Object[])
-			return ((Object[])o).length > 0;
+			return ((Object[]) o).length > 0;
 		else if (o instanceof Collection)
-			return ((Collection)o).size() >0;
+			return ((Collection) o).size() > 0;
 		else if (o instanceof Boolean)
-			return (Boolean)o;
+			return (Boolean) o;
 		return new Boolean(o.toString());
 	}
 }

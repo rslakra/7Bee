@@ -2,11 +2,13 @@
 //Bee Copyright (c) 2004 Dmitriy Rogatkin
 // Created on Mar 16, 2004
 package org.bee.oper;
+
 import org.bee.util.InfoHolder;
+
 /**
  * @author <a href="Dmitriy@mochamail.com">Dmitriy Rogatkin</a>
  *
- * Provide class description here
+ *         Provide class description here
  */
 public class eq {
 	

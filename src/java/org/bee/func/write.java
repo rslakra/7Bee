@@ -2,17 +2,18 @@
 //Bee Copyright (c) 2004 Dmitriy Rogatkin
 // Created on Mar 26, 2004
 package org.bee.func;
+
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.File;
 
 /**
  * @author <a href="Dmitriy@mochamail.com">Dmitriy Rogatkin</a>
  *
- * Provide class description here
+ *         Provide class description here
  */
 public class write {
-
+	
 	/**
 	 * 
 	 */
@@ -20,12 +21,12 @@ public class write {
 		super();
 		// TODO Auto-generated constructor stub
 	}
-
-	public static boolean eval(String...params) {
+	
+	public static boolean eval(String... params) {
 		return write(false, params);
 	}
 	
-	protected static boolean write(boolean append, String...params) {
+	protected static boolean write(boolean append, String... params) {
 		if (params.length < 2)
 			return false;
 		FileWriter fw = null;
@@ -34,15 +35,15 @@ public class write {
 			if (file.getParentFile().mkdirs() == false)
 				return false;
 		try {
-			//System.out.printf("write to %s %d\n", params[0],params.length );			
+			// System.out.printf("write to %s %d\n", params[0],params.length );
 			fw = new FileWriter(file, append);
 			for (int i = 1; i < params.length; i++) {
 				if (params[i] != null)
 					fw.write(params[i]);
-				//fw.write("\r\n");
-				//System.out.print(params[i]);
+				// fw.write("\r\n");
+				// System.out.print(params[i]);
 			}
-			//System.out.println();
+			// System.out.println();
 		} catch (IOException io) {
 			System.err.printf("bee:func:write an exception %s in writing of %s.\n", io, params[0]);
 			return false;
@@ -51,7 +52,7 @@ public class write {
 				try {
 					fw.close();
 				} catch (IOException io) {
-				//
+					//
 				}
 		}
 		return true;

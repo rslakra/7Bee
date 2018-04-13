@@ -6,26 +6,30 @@ package org.bee.processor;
 /**
  * @author <a href="dmitriy@mochamail.com">dmitriy Rogatkin</a>
  *
- * This exception is mostly used for controlling workflow
- * like interrupting certain processes. 
+ *         This exception is mostly used for controlling workflow
+ *         like interrupting certain processes.
  */
 public class ProcessException extends Error {
-
-protected int exitCode;
+	
+	/** serialVersionUID */
+	private static final long serialVersionUID = 1L;
+	
+	protected int exitCode;
+	
 	/**
 	 * 
 	 */
 	public ProcessException() {
 		super();
 	}
-
+	
 	/**
 	 * @param arg0
 	 */
 	public ProcessException(String arg0) {
 		super(arg0);
 	}
-
+	
 	/**
 	 * @param arg0
 	 * @param arg1
@@ -33,14 +37,14 @@ protected int exitCode;
 	public ProcessException(String arg0, Throwable arg1) {
 		super(arg0, arg1);
 	}
-
+	
 	/**
 	 * @param arg0
 	 */
 	public ProcessException(Throwable arg0) {
 		super(arg0);
 	}
-
+	
 	public ProcessException(String arg0, int ec) {
 		super(arg0);
 		exitCode = ec;

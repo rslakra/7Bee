@@ -5,20 +5,19 @@ package org.bee.util;
 
 /**
  * @author <a href="Dmitriy@mochamail.com">Dmitriy Rogatkin</a>
- *
- * Provide class description here
+ * @author <a href="rohtash.singh@gmail.com">Rohtash Singh Lakra</a>
  */
-public class InfoHolder <K, V, T> {
+public class InfoHolder<K, V, T> {
 	K key;
 	V value;
 	T type;
-	//long id;
+	// long id;
 	
 	public InfoHolder(K k, V v) {
 		key = k;
 		value = v;
 	}
-
+	
 	public InfoHolder(K k, V v, T t) {
 		this(k, v);
 		type = t;
@@ -36,8 +35,14 @@ public class InfoHolder <K, V, T> {
 		return type;
 	}
 	
+	/**
+	 * Returns the string represenation of this object.
+	 * 
+	 * @return
+	 * @see java.lang.Object#toString()
+	 */
 	public String toString() {
-		return "InfoHolder<"+key+", "+value+", "+type+">";
+		return "InfoHolder<" + key + ", " + value + ", " + type + ">";
 	}
-
+	
 }

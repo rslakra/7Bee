@@ -2,29 +2,31 @@
 //Bee Copyright (c) 2004 Dmitriy Rogatkin
 // Created on Mar 18, 2004
 package org.bee.func;
+
 import org.bee.processor.ProcessException;
+
 /**
  * @author <a href="Dmitriy@mochamail.com">Dmitriy Rogatkin</a>
  *
- * Provide class description here
+ *         Provide class description here
  */
 public final class stop {
-
+	
 	/**
 	 * 
 	 */
 	public stop() {
 		super();
 	}
-
+	
 	public static Object eval(String code) {
 		int result = 0;
 		try {
 			result = Integer.parseInt(code);
-		}catch(NumberFormatException nfe) {
+		} catch (NumberFormatException nfe) {
 		}
 		
 		return new ProcessException("stop", result);
 	}
-
+	
 }

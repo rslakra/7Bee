@@ -3,97 +3,100 @@
 // Created on Apr 23, 2004
 package org.bee.func;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.util.zip.ZipOutputStream;
-import java.util.zip.ZipEntry;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
-import org.bee.util.Misc;
+import java.util.zip.ZipOutputStream;
+
 import org.bee.util.InfoHolder;
+import org.bee.util.Misc;
 
 /**
  * @author <a href="dmitriy@mochamail.com">Dmitriy Rogatkin </a>
  * 
- * This function create <b>.war </b> file specified by 1st parameter
- * <p>
- * 2nd provides location of <i>web.xml </i>, but it can be considered as content
- * of it, if the location can't be resolved.
- * <p>
- * Following parameters grouped by 2 or more parameters, and 1st in a group
- * provides
- * <p>
- * operation abbreviations, like
- * <ul>
- * <li><b>A [prfx] </b>- add files to .war
- * <ol>
- * <li>source path, can include wild cards like * or ?</li>
- * </ol>
- * </li>
- * <li><b>E [prfx] </b>- add files not in exclude list
- * <ol>
- * <li>source path, can include wild cards like * or ?</li>
- * <li>exclude list comma separated with names only, wild card can be used as
- * well</li>
- * </ol>
- * </li>
- * <li><b>C [prfx] </b>- add files in classes
- * <ol>
- * <li>source path</li>
- * <li>exclude list, can be empty</li>
- * </ol>
- * </li>
- * <li><b>L [prfx]</b>- add files in library
- * <ol>
- * <li>source path</li>
- * <li>exclude list, can be empty</li>
- * </ol>
- * </li>
- * <li><b>W destination</b>- add files in library
- * <ol>
- * <li>content to write</li>
- * </ol>
- * </li>
- * </ul>
- * <p>
- * Note: optional blank separated from command character prefix is used to
- * specify dest path
+ *         This function create <b>.war </b> file specified by 1st parameter
+ *         <p>
+ *         2nd provides location of <i>web.xml </i>, but it can be considered as
+ *         content
+ *         of it, if the location can't be resolved.
+ *         <p>
+ *         Following parameters grouped by 2 or more parameters, and 1st in a
+ *         group
+ *         provides
+ *         <p>
+ *         operation abbreviations, like
+ *         <ul>
+ *         <li><b>A [prfx] </b>- add files to .war
+ *         <ol>
+ *         <li>source path, can include wild cards like * or ?</li>
+ *         </ol>
+ *         </li>
+ *         <li><b>E [prfx] </b>- add files not in exclude list
+ *         <ol>
+ *         <li>source path, can include wild cards like * or ?</li>
+ *         <li>exclude list comma separated with names only, wild card can be
+ *         used as
+ *         well</li>
+ *         </ol>
+ *         </li>
+ *         <li><b>C [prfx] </b>- add files in classes
+ *         <ol>
+ *         <li>source path</li>
+ *         <li>exclude list, can be empty</li>
+ *         </ol>
+ *         </li>
+ *         <li><b>L [prfx]</b>- add files in library
+ *         <ol>
+ *         <li>source path</li>
+ *         <li>exclude list, can be empty</li>
+ *         </ol>
+ *         </li>
+ *         <li><b>W destination</b>- add files in library
+ *         <ol>
+ *         <li>content to write</li>
+ *         </ol>
+ *         </li>
+ *         </ul>
+ *         <p>
+ *         Note: optional blank separated from command character prefix is used
+ *         to
+ *         specify dest path
  */
 public class warit {
 	public static final String WAR_EXT = ".war";
-
+	
 	protected enum Operation {
 		add, exclude, classes, libraries, file
 	};
-
+	
 	public static boolean eval(Object... args) {
 		if (args.length == 0)
 			return false; // nothing to do
-
+			
 		String warFileName = args[0].toString();
 		if (warFileName.toLowerCase().endsWith(WAR_EXT) == false)
 			warFileName += WAR_EXT;
 		ZipOutputStream warFile = null;
-
+		
 		try {
 			warFile = new ZipOutputStream(new FileOutputStream(warFileName));
 			int pos = 1;
 			pos = processWebXML(args, pos, warFile);
-
+			
 			while (pos < args.length) {
 				if (args[pos] instanceof Object[])
-					System.err.printf(
-							"warit:error: invalid type of parameter [%d] : %s, array of Object not supported%n", pos,
-							Arrays.toString((Object[]) args[pos]));
+					System.err.printf("warit:error: invalid type of parameter [%d] : %s, array of Object not supported%n", pos, Arrays.toString((Object[]) args[pos]));
 				else if (args[pos] instanceof Collection) {
 					args = insertTo(args, pos, (Collection) args[pos]);
 				} else if (args[pos] == null) { // ignore
@@ -110,26 +113,26 @@ public class warit {
 					System.out.printf("Process %d (%s) as %s\n", pos, args[pos], op.getKey());
 				boolean recurs = true;
 				switch (op.getKey()) {
-				case add:
-					for (String[] comps : parsePath(args[pos++]))
-						addPath(op.getValue(), warFile, comps[0], comps[1], null, true);
-					break;
-				case libraries:
-					recurs = false;
-				case classes:
-				case exclude:
-					for (String[] comps : parsePath(args[pos++]))
-						addPath(op.getValue(), warFile, comps[0], comps[1], (String)args[pos], recurs);
-					pos++;
-					break;
-				case file:
-					addContent(op.getValue(), warFile, args[pos++].toString().getBytes("UTF-8"));
-					break;
+					case add:
+						for (String[] comps : parsePath(args[pos++]))
+							addPath(op.getValue(), warFile, comps[0], comps[1], null, true);
+						break;
+					case libraries:
+						recurs = false;
+					case classes:
+					case exclude:
+						for (String[] comps : parsePath(args[pos++]))
+							addPath(op.getValue(), warFile, comps[0], comps[1], (String) args[pos], recurs);
+						pos++;
+						break;
+					case file:
+						addContent(op.getValue(), warFile, args[pos++].toString().getBytes("UTF-8"));
+						break;
 				}
 			}
 			return true;
 		} catch (ArrayIndexOutOfBoundsException aiobe) {
-			//aiobe.printStackTrace();
+			// aiobe.printStackTrace();
 			System.err.printf("warit:error: wrong number of parameters near %s, %s\n", args[args.length - 1], aiobe);
 			try {
 				warFile.close();
@@ -148,7 +151,7 @@ public class warit {
 		}
 		return false;
 	}
-
+	
 	private static Object[] insertTo(Object[] args, int pos, Collection collection) {
 		Object[] result = new Object[args.length + collection.size() - 1];
 		if (pos > 0)
@@ -160,7 +163,7 @@ public class warit {
 			System.arraycopy(args, pos + 1, result, i, args.length - pos - 1);
 		return result;
 	}
-
+	
 	protected static String[][] parsePath(Object p) {
 		int size = 0;
 		String result[][] = null;
@@ -186,7 +189,7 @@ public class warit {
 		}
 		return result;
 	}
-
+	
 	protected static String[] parseStringPath(String s) {
 		char[] cs = s.toCharArray();
 		int ls = -1;
@@ -202,7 +205,7 @@ public class warit {
 			return new String[] { s, "*" };
 		return new String[] { s, "" };
 	}
-
+	
 	protected static int processWebXML(Object[] args, int pos, ZipOutputStream warFile) throws IOException {
 		InputStream wxis = null;
 		long fileTime = System.currentTimeMillis();
@@ -226,7 +229,7 @@ public class warit {
 		}
 		return pos + 1;
 	}
-
+	
 	protected static InfoHolder<Operation, String, Object> parseCommand(String cmd) {
 		if (cmd.length() == 0)
 			return null;
@@ -240,8 +243,7 @@ public class warit {
 		else if (cmdChr == 'E')
 			return new InfoHolder<Operation, String, Object>(Operation.exclude, prefix);
 		else if (cmdChr == 'C') {
-			prefix = prefix == null ? "WEB-INF/classes/" : new File("WEB-INF/classes", prefix).toString().replace('\\', '/')
-					+ (isDir ? "/" : "");
+			prefix = prefix == null ? "WEB-INF/classes/" : new File("WEB-INF/classes", prefix).toString().replace('\\', '/') + (isDir ? "/" : "");
 			return new InfoHolder<Operation, String, Object>(Operation.classes, prefix);
 		} else if (cmdChr == 'L') {
 			prefix = prefix == null ? "WEB-INF/lib/" : new File("WEB-INF/lib", prefix).toString().replace('\\', '/') + (isDir ? "/" : "");
@@ -252,9 +254,8 @@ public class warit {
 		}
 		return null;
 	}
-
-	protected static void addPath(String targPath, ZipOutputStream warStream, String srcPath, String fileMask,
-			String excludeMask, boolean processDirectories) throws IOException {
+	
+	protected static void addPath(String targPath, ZipOutputStream warStream, String srcPath, String fileMask, String excludeMask, boolean processDirectories) throws IOException {
 		if (DEBUG_)
 			System.out.printf("Trying %s\n", srcPath);
 		File filePath = new File(srcPath);
@@ -266,8 +267,7 @@ public class warit {
 				targPath += '/';
 			for (File file : files) {
 				if (processDirectories || file.isDirectory() == false)
-					addPath(targPath + file.getName(), warStream, file.toString(), fileMask, excludeMask,
-							processDirectories);
+					addPath(targPath + file.getName(), warStream, file.toString(), fileMask, excludeMask, processDirectories);
 			}
 		} else if (filePath.isFile()) {
 			Pattern excludePattern = patternFromWildCard(excludeMask);
@@ -276,8 +276,7 @@ public class warit {
 			if (DEBUG_)
 				System.out.printf("adding %s to %s\n", filePath, targPath + '/' + filePath.getName());
 			try {
-				ZipEntry je = new ZipEntry(targPath == null ? filePath.getName() : targPath
-						+ (targPath.endsWith("/") ? filePath.getName() : ""));
+				ZipEntry je = new ZipEntry(targPath == null ? filePath.getName() : targPath + (targPath.endsWith("/") ? filePath.getName() : ""));
 				je.setTime(filePath.lastModified());
 				warStream.putNextEntry(je);
 				Misc.copyStream(new FileInputStream(filePath), warStream, 0);
@@ -290,23 +289,23 @@ public class warit {
 		} else
 			System.err.printf("warit:error: not found %s\n", filePath);
 	}
-
+	
 	protected static void addContent(String targPath, ZipOutputStream warStream, byte[] content) throws IOException {
 		InputStream is = new ByteArrayInputStream(content);
 		warStream.putNextEntry(new ZipEntry(targPath));
 		Misc.copyStream(is, warStream, 0);
 		is.close();
 	}
-
+	
 	static protected Pattern patternFromWildCard(String wc) {
 		if (wc == null)
 			return null;
 		return Pattern.compile(wc.replace("?", "[^/\\\\:]").replace("*", "[^/\\\\?:*]*"));
 	}
-
+	
 	protected static class FileFilterImpl implements FilenameFilter {
 		protected Pattern maskPattern, excludePattern;
-
+		
 		FileFilterImpl(String mask, String exclude) {
 			maskPattern = patternFromWildCard(mask);
 			// TODO: consider exclude as ',' separated list, so split it by ','
@@ -314,13 +313,13 @@ public class warit {
 			// NOTE: reg exp can include OR condition for the TODO above
 			excludePattern = patternFromWildCard(exclude);
 		}
-
+		
 		public boolean accept(File dir, String name) {
 			if (excludePattern != null)
 				return maskPattern.matcher(name).matches() && excludePattern.matcher(name).matches() == false;
 			return maskPattern.matcher(name).matches();
 		}
 	}
-
+	
 	protected static final boolean DEBUG_ = false;
 }

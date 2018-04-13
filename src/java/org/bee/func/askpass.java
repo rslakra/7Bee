@@ -8,15 +8,16 @@ import java.io.Console;
 /**
  * @author <a href="dmitriy@mochamail.com">Dmitriy Rogatkin</a>
  * 
- * Used for reading sensitive information from console without echo
+ *         Used for reading sensitive information from console without echo
  */
 public class askpass {
-
-	public static String eval(String prompt, String defVal/* , String encoding */) {
+	
+	public static String eval(String prompt, String defVal/*
+															 * , String encoding
+															 */) {
 		Console cons;
 		char[] passwd;
-		if ((cons = System.console()) != null
-				&& (passwd = cons.readPassword("%s", prompt == null ? "?" : prompt)) != null) {
+		if ((cons = System.console()) != null && (passwd = cons.readPassword("%s", prompt == null ? "?" : prompt)) != null) {
 			return passwd.length > 0 ? new String(passwd) : defVal;
 		}
 		return defVal;

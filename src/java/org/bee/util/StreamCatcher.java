@@ -29,11 +29,11 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.logging.Logger;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.PropertyResourceBundle;
+import java.util.logging.Logger;
 
 /**
  * @author dmitriy
@@ -42,27 +42,27 @@ import java.util.PropertyResourceBundle;
  */
 public class StreamCatcher extends Thread {
 	public static final String EMPTY = "";
-
+	
 	public static final String CRLF = "\r\n";
-
+	
 	public static final char NL = '\n';
-
+	
 	public static final char CR = '\r';
-
+	
 	public static final char EQUAL = '=';
-
+	
 	protected InputStream is;
-
+	
 	protected PrintStream ps;
-
+	
 	int buf_size = 4 * 1024;
-
+	
 	protected StringBuffer sb;
-
+	
 	public StreamCatcher(InputStream is) {
 		this(is, null);
 	}
-
+	
 	public StreamCatcher(InputStream is, PrintStream ps) {
 		this.is = is;
 		this.ps = ps;
@@ -70,12 +70,12 @@ public class StreamCatcher extends Thread {
 			sb = new StringBuffer();
 		setName("Stream catcher for " + is);
 	}
-
+	
 	public void run() {
 		try {
 			byte[] buf = new byte[buf_size];
 			while (true) {
-				//if (is.available() > 0)
+				// if (is.available() > 0)
 				int n = is.read(buf);
 				if (n > 0) {
 					if (ps != null)
@@ -83,32 +83,32 @@ public class StreamCatcher extends Thread {
 					if (sb != null)
 						sb.append(new String(buf, 0, n));
 				} else {
-					//Logger. getLogger("Bee").finest("EOF");
+					// Logger. getLogger("Bee").finest("EOF");
 					break;
 				}
 			}
-			//is.close();
+			// is.close();
 		} catch (IOException ioe) {
 			Logger.getLogger("Bee").severe("Exception:" + ioe);
 		}
 	}
-
+	
 	public StringBuffer getContent() {
 		return sb;
 	}
-
+	
 	public String toString() {
 		if (sb != null)
 			return sb.toString();
 		return "";
 	}
-
+	
 	public Properties toProperties() {
 		List<String> names = new ArrayList<String>();
 		List<String> values = new ArrayList<String>();
 		Properties envProperties = new Properties();
 		char[] env = toString().toCharArray();
-
+		
 		try {
 			String value = EMPTY;
 			for (int i = 0; i < env.length; i++) {
@@ -122,12 +122,12 @@ public class StreamCatcher extends Thread {
 						value = EMPTY;
 					}
 				}
-
+				
 				if (env[i] != EQUAL && env[i] != NL) {
 					value = value + env[i];
 				}
 			}
-
+			
 			for (int i = 0; i < names.size(); i++) {
 				envProperties.setProperty(names.get(i).toString().toUpperCase(), values.get(i).toString());
 			}
@@ -137,7 +137,7 @@ public class StreamCatcher extends Thread {
 		}
 		return envProperties;
 	}
-
+	
 	public java.util.ResourceBundle getAsResourceBundle() {
 		try {
 			// TODO: work when Unicode used
@@ -147,7 +147,7 @@ public class StreamCatcher extends Thread {
 		}
 		return null;
 	}
-
+	
 	public boolean isEmpty() {
 		return sb == null || sb.length() == 0;
 	}

@@ -24,15 +24,17 @@
  */
 
 package org.bee.oper;
+
 import org.bee.util.InfoHolder;
+
 /**
  * @author dmitriy
  *
  * 
  */
 public class not extends or {
-	public static InfoHolder < String, String, Boolean > doOperator(InfoHolder < String, String, Object > op1, InfoHolder < String, String, Object > op2) {
-		Boolean result =  toBoolean(op1) == Boolean.FALSE;
-		return new InfoHolder < String, String, Boolean > ("not", result.toString(), result);
+	public static InfoHolder<String, String, Boolean> doOperator(InfoHolder<String, String, Object> op1, InfoHolder<String, String, Object> op2) {
+		Boolean result = toBoolean(op1) == Boolean.FALSE;
+		return new InfoHolder<String, String, Boolean>("not", result.toString(), result);
 	}
 }

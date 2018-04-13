@@ -15,15 +15,19 @@ import java.util.zip.ZipFile;
 
 import org.bee.util.Misc;
 
-/** A similar to zip utility
+/**
+ * A similar to zip utility
  * 
  * @author Dmitriy
  *
  */
 public class unzip {
-	/** main method
+	/**
+	 * main method
 	 * 
-	 * @param args 1 - zip archive location, 2 - target directory to unzip (optional, 3.. specific entry names (optional) 
+	 * @param args
+	 *            1 - zip archive location, 2 - target directory to unzip
+	 *            (optional, 3.. specific entry names (optional)
 	 * @return
 	 */
 	public static boolean eval(Object... args) {
@@ -36,17 +40,18 @@ public class unzip {
 		try {
 			ZipFile zipFile = new ZipFile(srcFile);
 			if (args.length > 2) {
-				for (int i = 2; i< args.length; i++) {
+				for (int i = 2; i < args.length; i++) {
 					// no wild card search for now
-					// TODO for wild car entries, utilize complete set, but add check for match for every entry
+					// TODO for wild car entries, utilize complete set, but add
+					// check for match for every entry
 					if (args[i] instanceof Collection) {
 						ArrayList entries = new ArrayList();
 						entries.addAll((Collection) args[i]);
 						extractEntries(zipFile, targetLoc, entries.toArray());
-					} else if (args[i] instanceof Object[] ) {
-						extractEntries(zipFile, targetLoc, (Object[])args[i]);	
+					} else if (args[i] instanceof Object[]) {
+						extractEntries(zipFile, targetLoc, (Object[]) args[i]);
 					} else
-						extractEntries(zipFile, targetLoc, new Object[]{args[i]});
+						extractEntries(zipFile, targetLoc, new Object[] { args[i] });
 				}
 			} else {
 				Enumeration<? extends ZipEntry> entries = zipFile.entries();
@@ -61,38 +66,39 @@ public class unzip {
 		} catch (IOException e) {
 			System.err.printf("zip:error: %s%n", e);
 		}
-
+		
 		return false;
 	}
 	
-	private static void extractEntries(ZipFile zipFile, File destDir, Object [] entries) throws IOException{
-		for (int e =0; e < entries.length; e++) {
+	private static void extractEntries(ZipFile zipFile, File destDir, Object[] entries) throws IOException {
+		for (int e = 0; e < entries.length; e++) {
 			String name = entries[e].toString();
-			name = name .replace('\\', '/');
-			//name = new String(name.getBytes(Charset.forName("utf-8")), Charset.forName("ASCII"));
+			name = name.replace('\\', '/');
+			// name = new String(name.getBytes(Charset.forName("utf-8")),
+			// Charset.forName("ASCII"));
 			ZipEntry entry = zipFile.getEntry(name);
 			if (entry != null) {
 				extractEntry(zipFile, destDir, entry);
-			}			
+			}
 		}
 	}
 	
-	private static void extractEntry(ZipFile zipFile, File targetLoc, ZipEntry zipEntry) throws IOException{
+	private static void extractEntry(ZipFile zipFile, File targetLoc, ZipEntry zipEntry) throws IOException {
 		String name = zipEntry.getName();
-		//name = new String(name.getBytes(Charset.forName("ASCII")), "UTF-8");
+		// name = new String(name.getBytes(Charset.forName("ASCII")), "UTF-8");
 		name = name.replace('/', File.separatorChar);
 		File zipEntryFile = new File(targetLoc, name);
 		boolean dir = zipEntry.isDirectory();
-		File zipPath = dir?zipEntryFile:zipEntryFile.getParentFile();
+		File zipPath = dir ? zipEntryFile : zipEntryFile.getParentFile();
 		if (zipPath != null) {
 			if (zipPath.exists() == false && zipPath.mkdirs() == false)
-				throw new IOException("Can't create directory "+zipPath.getAbsolutePath());
+				throw new IOException("Can't create directory " + zipPath.getAbsolutePath());
 		}
 		if (dir == false && zipEntryFile.createNewFile()) {
 			FileOutputStream os;
-			Misc.copyStream(zipFile.getInputStream(zipEntry), os= new FileOutputStream(zipEntryFile), -1);
+			Misc.copyStream(zipFile.getInputStream(zipEntry), os = new FileOutputStream(zipEntryFile), -1);
 			os.close();
 			zipEntryFile.setLastModified(zipEntry.getTime());
-		}	
+		}
 	}
 }

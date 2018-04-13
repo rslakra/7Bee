@@ -7,18 +7,18 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public final class Else extends Block {
-
+	
 	public Else(String xpath) {
 		super(xpath);
 	}
-
+	
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 		super.startElement(uri, localName, qName, attributes);
 		blockType = BlockType.t_else;
 	}
-
+	
 	public String[] getAllowedAttributeNames() {
 		return null;
 	}
-
+	
 }

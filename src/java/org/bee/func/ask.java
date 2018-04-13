@@ -3,21 +3,21 @@
 // Created on Apr 23, 2004
 package org.bee.func;
 
-import java.io.InputStream;
-import java.io.PrintStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 
 import org.bee.util.NullPrintStream;
 
 /**
  * @author <a href="dmitriy@mochamail.com">Dmitriy Rogatkin </a>
  * 
- * Provide class description here
+ *         Provide class description here
  */
 public class ask {
-
-	public static String eval(String prompt, String defVal/* , String encoding */) {
+	
+	public static String eval(String prompt, String defVal) {
 		PrintStream printStream = System.out;
 		if (printStream instanceof NullPrintStream)
 			printStream = ((NullPrintStream) printStream).getOriginal();
@@ -28,8 +28,8 @@ public class ask {
 		String result = readLine(System.in);
 		return result.length() == 0 ? defVal : result;
 	}
-
-	static protected String readLine(InputStream is/* , String encoding */) {
+	
+	static protected String readLine(InputStream is) {
 		if (is == null)
 			return "";
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -37,8 +37,8 @@ public class ask {
 		try {
 			do {
 				c = is.read();
-				//System.out.println("Char:" + (int) c);
-				if (c == 0xA)  // to work on Unix/Windows
+				// System.out.println("Char:" + (int) c);
+				if (c == 0xA) // to work on Unix/Windows
 					break;
 				buffer.write(c);
 			} while (c > 0);

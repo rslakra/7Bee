@@ -33,32 +33,32 @@ import java.util.logging.Logger;
 /**
  * @author dmitriy
  * 
- *  
+ * 
  */
 public class InFeeder extends Thread {
 	// TODO: consider encoding sometime
 	protected InputStream is;
-
+	
 	protected String value;
-
+	
 	protected OutputStream os;
 	
 	protected boolean runs;
-
+	
 	int buf_size = 256;
-
+	
 	public InFeeder(InputStream is, OutputStream os) {
 		this.is = is;
 		this.os = os;
-		setName("In stream reader "+is);
+		setName("In stream reader " + is);
 	}
-
+	
 	public InFeeder(String iv, OutputStream os) {
 		value = iv;
 		this.os = os;
 		setName("Value reader ");
 	}
-
+	
 	public void run() {
 		runs = true;
 		try {
@@ -68,17 +68,17 @@ public class InFeeder extends Thread {
 				byte buf[] = new byte[buf_size];
 				int n;
 				while (runs) {
-					if( is.available() > 0 ) {
+					if (is.available() > 0) {
 						n = is.read(buf);
 						if (n > 0) {
 							os.write(buf, 0, n);
 							os.flush();
-						} else 
+						} else
 							runs = false;
-					} else 
+					} else
 						try {
 							Thread.sleep(100);
-						} catch(InterruptedException ie) {
+						} catch (InterruptedException ie) {
 						}
 				}
 			}

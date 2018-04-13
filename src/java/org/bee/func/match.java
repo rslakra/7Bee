@@ -24,7 +24,9 @@
  */
 
 package org.bee.func;
+
 import java.util.regex.Pattern;
+
 /**
  * @author Dmitriy
  *
@@ -33,8 +35,8 @@ import java.util.regex.Pattern;
 public class match {
 	public static boolean eval(String pattern, String s) {
 		if (DEBUG_)
-			System.out.printf("Process %s match %s =%b\n",s,pattern,Pattern.compile(pattern).matcher(s).matches());
-		//return Pattern.compile(pattern).matcher(s).matches();
+			System.out.printf("Process %s match %s =%b\n", s, pattern, Pattern.compile(pattern).matcher(s).matches());
+		// return Pattern.compile(pattern).matcher(s).matches();
 		return s.matches(pattern);
 	}
 	

@@ -2,24 +2,27 @@
 //Bee Copyright (c) 2004 Dmitriy Rogatkin
 // Created on Mar 18, 2004
 package org.bee.func;
+
 import java.util.Date;
+
 /**
  * @author <a href="Dmitriy@mochamail.com">Dmitriy Rogatkin</a>
  *
- * Provide class description here
+ *         Provide class description here
  */
 public final class now {
-
-	/** Returns current time
+	
+	/**
+	 * Returns current time
 	 * 
 	 */
 	public now() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
-
+	
 	public static Date eval() {
 		return new Date();
 	}
-
+	
 }

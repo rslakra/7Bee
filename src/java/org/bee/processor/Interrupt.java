@@ -8,21 +8,23 @@ import org.bee.util.InfoHolder;
 /**
  * @author <a href="Dmitriy@mochamail.com">Dmitriy Rogatkin</a>
  *
- * Provide class description here
+ *         Provide class description here
  */
 public class Interrupt extends AbstractValue {
-
+	
 	public Interrupt(String xpath) {
 		super(xpath);
 	}
-
-	/* (non-Javadoc)
+	
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.bee.processor.Instruction#eval()
 	 */
 	public InfoHolder eval() {
 		throw new ProcessException(getName());
 	}
-
+	
 	public String getName() {
 		return name;
 	}

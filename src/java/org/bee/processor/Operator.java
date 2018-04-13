@@ -2,35 +2,39 @@
 //Bee Copyright (c) 2004 Dmitriy Rogatkin
 // Created on Mar 11, 2004
 package org.bee.processor;
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-import java.util.ArrayList;
-import static java.util.logging.Level.*;
-import org.xml.sax.SAXException;
-import org.xml.sax.Attributes;
-import static org.bee.processor.Configuration.*;
+
+import static java.util.logging.Level.FINEST;
+import static org.bee.processor.Configuration.OPERATORS_PACKAGE;
+import static org.bee.processor.Configuration.OPERATOR_METHOD_NAME;
 import static org.bee.util.Logger.logger;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bee.util.InfoHolder;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 
 /**
  * @author <a href="Dmitriy@mochamail.com">Dmitriy Rogatkin</a>
  *
- * Provide class description here
+ *         Provide class description here
  */
 public class Operator extends AbstractBlock {
-	//protected String type;
+	// protected String type;
 	protected Method method;
-	protected List < AbstractValue > operands;
-
+	protected List<AbstractValue> operands;
+	
 	public Operator(String xpath) {
 		super(xpath);
-		operands = new ArrayList < AbstractValue > ();
+		operands = new ArrayList<AbstractValue>();
 	}
-
+	
 	public InfoHolder eval() {
 		InfoHolder result = null;
-		int nop = operands.size() ;
+		int nop = operands.size();
 		if (nop > 0) {
 			result = operands.get(0).eval();
 			if (nop < 2)
@@ -41,20 +45,21 @@ public class Operator extends AbstractBlock {
 		} else
 			result = doOperator(result, null);
 		if (variable != null) {
-			//getNameSpace().inScope(new InfoHolder < String, InfoHolder, Object > (variable, result));
+			// getNameSpace().inScope(new InfoHolder < String, InfoHolder,
+			// Object > (variable, result));
 			if (parent.getNameSpace() != null)
-				parent.getNameSpace().inScope(new InfoHolder < String, InfoHolder, Object > (variable, result));
+				parent.getNameSpace().inScope(new InfoHolder<String, InfoHolder, Object>(variable, result));
 		}
-		logger.finest("'" + name + "'="+result);
+		logger.finest("'" + name + "'=" + result);
 		return result;
 	}
-
+	
 	public void childDone(Instruction child) {
 		operands.add((AbstractValue) child);
 	}
-
+	
 	protected InfoHolder doOperator(InfoHolder result, InfoHolder operand) {
-		logger.finest("'" + name + "' ("+result+", " + operand+')');
+		logger.finest("'" + name + "' (" + result + ", " + operand + ')');
 		if (method != null)
 			try {
 				return (InfoHolder) method.invoke(null, result, operand);
@@ -73,7 +78,7 @@ public class Operator extends AbstractBlock {
 			}
 		return null;
 	}
-
+	
 	public static Class findOperatorClass(String name) {
 		if (name == null)
 			return null;
@@ -89,7 +94,7 @@ public class Operator extends AbstractBlock {
 		}
 		return null;
 	}
-
+	
 	public static Method getMethod(Class classof, String name) {
 		if (classof == null)
 			return null;
@@ -100,7 +105,7 @@ public class Operator extends AbstractBlock {
 		}
 		return null;
 	}
-
+	
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 		super.startElement(uri, localName, qName, attributes);
 		method = getMethod(findOperatorClass(name), OPERATOR_METHOD_NAME);

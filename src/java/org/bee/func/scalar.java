@@ -9,7 +9,7 @@ public class scalar {
 	public static String eval(Object vector) {
 		return eval(vector, null);
 	}
-
+	
 	public static String eval(Object vector, Object sep) {
 		StringBuffer result = new StringBuffer(512);
 		if (vector instanceof List)
@@ -26,7 +26,7 @@ public class scalar {
 				if (sep != null)
 					result.append(sep);
 			}
-
+		
 		if (sep == null)
 			return result.toString();
 		return result.substring(0, result.length() - sep.toString().length());

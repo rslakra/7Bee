@@ -24,16 +24,18 @@
  */
 
 package org.bee.func;
+
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.FileInputStream;
-import org.bee.util.Misc;
+
 import org.bee.processor.ProcessException;
+import org.bee.util.Misc;
 
 /**
  * @author Dmitriy
  *
- *  reads file content in a variable
+ *         reads file content in a variable
  */
 public class read {
 	
@@ -42,18 +44,18 @@ public class read {
 		// new File(fileName).toURL().openStream()
 		InputStream is = null;
 		try {
-			String result = Misc.streamToString(is = new FileInputStream(fileName), enc, 10*1024);
+			String result = Misc.streamToString(is = new FileInputStream(fileName), enc, 10 * 1024);
 			if (sep == null || sep.length() == 0)
 				return result;
 			if (result != null)
 				return result.split(sep);
-		} catch(IOException ioe) {
-			System.err.println("func:read:error "+ioe);
+		} catch (IOException ioe) {
+			System.err.println("func:read:error " + ioe);
 			return new ProcessException("File reading error.", ioe);
 		} finally {
 			try {
 				is.close();
-			} catch(Exception e) {
+			} catch (Exception e) {
 				//
 			}
 		}

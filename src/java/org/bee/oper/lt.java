@@ -8,12 +8,11 @@ import org.bee.util.InfoHolder;
 /**
  * @author <a href="Dmitriy@mochamail.com">Dmitriy Rogatkin</a>
  * 
- * Does less comparision of first operand with second
+ *         Does less comparision of first operand with second
  */
 public class lt {
-
-	public static InfoHolder<String, String, Boolean> doOperator(InfoHolder<String, String, Comparable> op1,
-			InfoHolder<String, String, Comparable> op2) {
+	
+	public static InfoHolder<String, String, Boolean> doOperator(InfoHolder<String, String, Comparable> op1, InfoHolder<String, String, Comparable> op2) {
 		Boolean result;
 		if (op1.getValue() == null) {
 			result = (op2 != null && op2.getValue() != null);
@@ -26,9 +25,8 @@ public class lt {
 			result = Boolean.FALSE;
 		return new InfoHolder<String, String, Boolean>("lt", result.toString(), result);
 	}
-
-	public static InfoHolder<String, String, Boolean> proceed(InfoHolder<String, String, Comparable> op1,
-			InfoHolder<String, String, Comparable> op2) {
+	
+	public static InfoHolder<String, String, Boolean> proceed(InfoHolder<String, String, Comparable> op1, InfoHolder<String, String, Comparable> op2) {
 		return doOperator(op1, op2);
 	}
 }

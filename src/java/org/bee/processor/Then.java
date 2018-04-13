@@ -7,11 +7,11 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public final class Then extends Block {
-
+	
 	public Then(String xpath) {
-		super(xpath);		
+		super(xpath);
 	}
-
+	
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 		super.startElement(uri, localName, qName, attributes);
 		blockType = BlockType.t_then;

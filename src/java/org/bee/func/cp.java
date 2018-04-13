@@ -16,11 +16,11 @@ import org.bee.util.Misc;
 /**
  * @author <a href="dmitriy@mochamail.com">Dmitriy Rogatkin</a>
  * 
- * A function for copying files, sources can be URL
+ *         A function for copying files, sources can be URL
  */
 public class cp {
 	protected boolean append;
-
+	
 	public static List<String> eval(String... copyPairs) {
 		List<String> result = new ArrayList<String>();
 		for (int i = 0; i < copyPairs.length - 1; i += 2) {
@@ -28,7 +28,7 @@ public class cp {
 		}
 		return result;
 	}
-
+	
 	protected void copy(List<String> copied, String srcMask, String dstMask, boolean append) {
 		if (DEBUG_)
 			System.out.printf("cp: %s %s (append %b)\n", srcMask, dstMask, append);
@@ -50,32 +50,30 @@ public class cp {
 				action(srcFile, new File(dstParts[0], srcFile.getName()), append);
 			}
 		} else
-			copy(copied, srcFile, srcParts, 1, dstParts[0], dstParts.length > 1 ? dstParts[dstParts.length - 1] : "",
-					append);
+			copy(copied, srcFile, srcParts, 1, dstParts[0], dstParts.length > 1 ? dstParts[dstParts.length - 1] : "", append);
 	}
-
-	protected void copy(List<String> copied, File srcPath, String[] parts, int pos, String destPath, String renMask,
-			boolean append) {
+	
+	protected void copy(List<String> copied, File srcPath, String[] parts, int pos, String destPath, String renMask, boolean append) {
 		srcPath.listFiles(new FileCopier(copied, parts, pos, destPath, renMask, append));
 	}
-
+	
 	protected class FileCopier implements FileFilter {
 		protected String[] parts;
-
+		
 		protected int pos;
-
+		
 		protected String pat;
-
+		
 		protected String srcMask, renMask;
-
+		
 		protected String destPath;
-
+		
 		protected int srcConstLen;
-
+		
 		protected boolean append;
-
+		
 		protected List<String> copied;
-
+		
 		FileCopier(List<String> copied, String[] parts, int index, String destPath, String renMask, boolean append) {
 			this.copied = copied;
 			this.parts = parts;
@@ -91,7 +89,8 @@ public class cp {
 			else if (vp2 >= 0)
 				srcConstLen = srcMask.length() - vp2 - 1;
 			if (pos != (this.parts.length - 1))
-				// TODO: it can be calculated one and then spreaded, however it isn't big deal
+				// TODO: it can be calculated one and then spreaded, however it
+				// isn't big deal
 				srcMask = Misc.wildCardToRegExpr(this.parts[parts.length - 1]);
 			else
 				srcMask = pat;
@@ -105,7 +104,7 @@ public class cp {
 				srcConstLen = 0;
 			this.renMask = renMask;
 		}
-
+		
 		public boolean accept(File pathname) {
 			String name = pathname.getName();
 			if (name.matches(pat)) {
@@ -114,9 +113,7 @@ public class cp {
 						System.out.printf("cp: %s(%s) \n", pathname, srcMask);
 					if (name.matches(srcMask)) {
 						String srcPath = pathname.toString(); // getParent();
-						File destFile = new File(destPath, srcPath.substring(parts[0].length(), srcPath.length()
-								- srcConstLen)
-								+ renMask);
+						File destFile = new File(destPath, srcPath.substring(parts[0].length(), srcPath.length() - srcConstLen) + renMask);
 						// System.out.printf("cp: dest %s \n", destFile);
 						if (destFile.getParentFile().exists() == false)
 							destFile.getParentFile().mkdirs();
@@ -128,7 +125,7 @@ public class cp {
 			return false;
 		}
 	}
-
+	
 	protected String action(File srcFile, File destFile, boolean append) {
 		if (DEBUG_)
 			System.out.printf("cp: plan to copy %s %s (append %b)\n", srcFile.toString(), destFile.toString(), append);
@@ -157,6 +154,6 @@ public class cp {
 		}
 		return srcFile.getName();
 	}
-
+	
 	static final boolean DEBUG_ = false;
 }

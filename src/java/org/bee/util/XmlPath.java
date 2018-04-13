@@ -2,21 +2,26 @@
 //Bee Copyright (c) 2004 Dmitriy Rogatkin
 // Created on Mar 10, 2004
 package org.bee.util;
+
 import java.util.Stack;
+
 /**
  * @author <a href="Dmitriy@mochamail.com">Dmitriy Rogatkin</a>
  *
- * Provide class description here
+ *         Provide class description here
  */
-public class XmlPath extends Stack < String > {
-
+public class XmlPath extends Stack<String> {
+	
+	/** serialVersionUID */
+	private static final long serialVersionUID = 1L;
+	
 	public String toString() {
 		String result = "/";
 		for (String element : this)
 			result += element + '/';
 		return result;
 	}
-
+	
 	public static XmlPath wildCard(XmlPath xpath) {
 		XmlPath result = new XmlPath();
 		boolean startAdd = false;
@@ -27,7 +32,7 @@ public class XmlPath extends Stack < String > {
 					startAdd = true;
 				} else
 					result.push(element);
-			//else Exception  
+			// else Exception
 		}
 		return result;
 	}
@@ -37,6 +42,6 @@ public class XmlPath extends Stack < String > {
 		for (String element : xpath.split("/"))
 			result.push(element);
 		return result;
-
+		
 	}
 }

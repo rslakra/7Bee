@@ -24,18 +24,20 @@
  */
 
 package org.bee.util;
+
 import java.io.File;
-import java.io.IOException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
+
 /**
  * @author dmitriy
  *
  * 
  */
 public class LoggerConfig extends Properties {
-
+	
 	public LoggerConfig() {
 		setProperty("java.util.logging.FileHandler.pattern", "%h/java%u.log");
 		setProperty("java.util.logging.FileHandler.limit", "50000");
@@ -68,7 +70,7 @@ public class LoggerConfig extends Properties {
 			FileOutputStream fos;
 			store(fos = new FileOutputStream(result), "bee temporary logger config file");
 			fos.close();
-		} catch(IOException ioe) {
+		} catch (IOException ioe) {
 			System.err.printf("LoggerConfig:error: Problem in creation logger config file %s\n", ioe);
 			return null;
 		}

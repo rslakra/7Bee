@@ -4,23 +4,24 @@
 package org.bee.func;
 
 import java.io.File;
+
 /**
  * @author <a href="Dmitriy@mochamail.com">Dmitriy Rogatkin</a>
  *
- * Provide class description here
+ *         Provide class description here
  */
 public final class filename {
-
+	
 	/**
 	 * 
 	 */
 	public filename() {
 		super();
 	}
-
+	
 	public static String eval(String path) {
-		//System.out.printf("========>filename: for path %s\n", path);
-		//new Exception("FIlename").printStackTrace(System.out);
+		// System.out.printf("========>filename: for path %s\n", path);
+		// new Exception("FIlename").printStackTrace(System.out);
 		if (path == null)
 			return null;
 		File file = new File(path);
@@ -43,5 +44,5 @@ public final class filename {
 			return path;
 		}
 	}
-
+	
 }

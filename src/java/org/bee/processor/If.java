@@ -3,24 +3,27 @@
 // Created on Mar 18, 2004
 package org.bee.processor;
 
-import org.bee.util.InfoHolder;
 import static org.bee.util.Logger.logger;
+
+import org.bee.util.InfoHolder;
+
 /**
  * @author <a href="Dmitriy@mochamail.com">Dmitriy Rogatkin</a>
  *
- * Provide class description here
+ *         Provide class description here
  */
 public final class If extends AbstractBlock {
 	protected Expression expression;
 	protected Block thenBlock;
 	protected Block elseBlock;
+	
 	/**
 	 * @param xpath
 	 */
 	public If(String xpath) {
 		super(xpath);
 	}
-
+	
 	public void childDone(Instruction child) {
 		if (child instanceof Expression)
 			if (expression == null)
@@ -38,13 +41,15 @@ public final class If extends AbstractBlock {
 		} else
 			logger.severe("unexpected instruction in 'if' /" + child);
 	}
-
-	/* (non-Javadoc)
+	
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.bee.processor.Instruction#eval()
 	 */
 	public InfoHolder eval() {
 		if (expression != null) {
-			InfoHolder < String, String, Object > er = expression.eval();
+			InfoHolder<String, String, Object> er = expression.eval();
 			if (er != null && Boolean.TRUE.toString().equalsIgnoreCase(er.getValue())) {
 				if (thenBlock != null)
 					return thenBlock.eval();
@@ -58,5 +63,5 @@ public final class If extends AbstractBlock {
 			logger.severe("An expression missed 'if'.");
 		return null;
 	}
-
+	
 }

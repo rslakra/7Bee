@@ -2,24 +2,27 @@
 //Bee Copyright (c) 2004 Dmitriy Rogatkin
 // Created on Apr 23, 2004
 package org.bee.util;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
+
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.IOException;
-import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author <a href="dmitriy@mochamail.com">dmitriy Rogatkin</a>
  *
- * Miscellenious utility methods
+ *         Miscellenious utility methods
  */
 public class Misc {
-
+	
 	protected static final int BUF_SIZE = 1024 * 32;
-	/** formats time in ms in the string (dd)d:hh:mm:ss.mss, <br>
+	
+	/**
+	 * formats time in ms in the string (dd)d:hh:mm:ss.mss, <br>
 	 * for example 10d:12:34:56.103
 	 */
 	public static String formatTime(long time) {
@@ -30,7 +33,7 @@ public class Misc {
 		if (time % 1000 > 0)
 			result.append('.').append(String.valueOf(time % 1000));
 		time /= 1000;
-
+		
 		if (time > 0) {
 			val = (int) time % 60;
 			result.insert(0, val);
@@ -59,10 +62,10 @@ public class Misc {
 			} else
 				result.insert(0, "0:");
 		}
-
+		
 		return result.toString();
 	}
-
+	
 	public static long copyStream(InputStream is, OutputStream os, long maxLen) throws IOException {
 		byte[] buffer = new byte[BUF_SIZE];
 		int len;
@@ -85,7 +88,7 @@ public class Misc {
 		if (DEBUG_)
 			System.out.printf("pp: %s to %s \n", pat, java.util.Arrays.asList(components));
 		String path = "";
-		List < String > result = new ArrayList < String > ();
+		List<String> result = new ArrayList<String>();
 		for (String pathComp : components) {
 			if (result.size() > 0)
 				result.add(pathComp);
@@ -102,8 +105,7 @@ public class Misc {
 		return result.toArray(new String[result.size()]);
 	}
 	
-	public static String streamToString(InputStream is, String encoding,
-			int bufSize) throws IOException {
+	public static String streamToString(InputStream is, String encoding, int bufSize) throws IOException {
 		StringBuffer result = new StringBuffer(100);
 		byte[] buffer = new byte[bufSize];
 		int len;
@@ -127,21 +129,21 @@ public class Misc {
 		}
 		return result.toString();
 	}
-
+	
 	public static String[] merge(String[] ar1, String[] ar2) {
-	    if (ar1 == null) {
-	        ar1 = ar2;
-	        ar2 = null;
-	    }
-	    if (ar1 != null) {
-	        if (ar2 == null || ar2.length == 0)
-	            return ar1;
-	        String [] res = new String[ar1.length+ar2.length];
-	        System.arraycopy(ar1, 0, res, 0, ar1.length);
-	        System.arraycopy(ar2, 0, res, ar1.length, ar2.length);
-	        return res;
-	    }
-	    return null;
+		if (ar1 == null) {
+			ar1 = ar2;
+			ar2 = null;
+		}
+		if (ar1 != null) {
+			if (ar2 == null || ar2.length == 0)
+				return ar1;
+			String[] res = new String[ar1.length + ar2.length];
+			System.arraycopy(ar1, 0, res, 0, ar1.length);
+			System.arraycopy(ar2, 0, res, ar1.length, ar2.length);
+			return res;
+		}
+		return null;
 	}
 	
 	public static boolean hasValidClassLibExtension(String name) {

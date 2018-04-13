@@ -24,16 +24,18 @@
  */
 
 package org.bee.oper;
+
 import org.bee.util.InfoHolder;
+
 /**
  * @author dmitriy
  *
  * 
  */
 public class xor extends or {
-	public static InfoHolder < String, String, Boolean > doOperator(InfoHolder < String, String, Object > op1, InfoHolder < String, String, Object > op2) {
+	public static InfoHolder<String, String, Boolean> doOperator(InfoHolder<String, String, Object> op1, InfoHolder<String, String, Object> op2) {
 		Boolean result = toBoolean(op1) ^ toBoolean(op2);
-		return new InfoHolder < String, String, Boolean > ("xor", result.toString(), result);
+		return new InfoHolder<String, String, Boolean>("xor", result.toString(), result);
 	}
-
+	
 }

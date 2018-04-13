@@ -2,24 +2,25 @@
 //Bee Copyright (c) 2004 Dmitriy Rogatkin
 // Created on Apr 20, 2004
 package org.bee.func;
+
 import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
+
 /**
  * @author <a href="dmitriy@mochamail.com">Dmitriy Rogatkin</a>
  *
- * Provide class description here
+ *         Provide class description here
  */
 public class mv extends cp {
-
-	public static List < String > eval(String...copyPairs) {
-		List < String > result = new ArrayList < String > ();
+	
+	public static List<String> eval(String... copyPairs) {
+		List<String> result = new ArrayList<String>();
 		for (int i = 0; i < copyPairs.length - 1; i += 2) {
 			new mv().copy(result, copyPairs[i], copyPairs[i + 1], false);
 		}
 		return result;
 	}
-	
 	
 	@Override
 	protected String action(File srcFile, File destFile, boolean append) {

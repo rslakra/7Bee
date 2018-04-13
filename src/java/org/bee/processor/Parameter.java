@@ -2,20 +2,23 @@
 //Bee Copyright (c) 2004 Dmitriy Rogatkin
 // Created on Mar 11, 2004
 package org.bee.processor;
-import org.bee.util.InfoHolder;
+
 import static org.bee.util.Logger.logger;
+
+import org.bee.util.InfoHolder;
 
 /**
  * @author <a href="Dmitriy@mochamail.com">Dmitriy Rogatkin</a>
  *
- * Provide class description here
+ *         Provide class description here
  */
 public class Parameter extends Value {
 	protected AbstractBlock calculatedValue;
+	
 	public Parameter(String xpath) {
 		super(xpath);
 	}
-
+	
 	public void childDone(Instruction child) {
 		if (calculatedValue != null) {
 			// TODO think about auto array for parameter
@@ -25,7 +28,7 @@ public class Parameter extends Value {
 		else
 			logger.severe("Not allowed here /" + child);
 	}
-
+	
 	public InfoHolder eval() {
 		if (calculatedValue != null)
 			return calculatedValue.eval();

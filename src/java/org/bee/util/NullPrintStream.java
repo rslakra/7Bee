@@ -3,20 +3,23 @@
 // Created on Apr 23, 2004
 package org.bee.util;
 
-import java.io.PrintStream;
-import java.io.OutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 
 /**
  * @author <a href="dmitriy@mochamail.com">dmitriy Rogatkin</a>
  *
- * Provide class description here
+ *         Provide class description here
  */
 public class NullPrintStream extends PrintStream {
 	protected PrintStream originalPrintStream;
+	
 	public NullPrintStream(PrintStream original) {
 		super(new OutputStream() {
-			/** Overrides the <code>OutputStream.write</code> function to do nothing.
+			/**
+			 * Overrides the <code>OutputStream.write</code> function to do
+			 * nothing.
 			 */
 			public void write(int b) throws IOException {
 			}

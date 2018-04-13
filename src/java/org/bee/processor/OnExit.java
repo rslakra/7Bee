@@ -3,16 +3,18 @@
 // Created on Mar 18, 2004
 package org.bee.processor;
 
-import org.bee.util.InfoHolder;
 import static org.bee.util.Logger.logger;
+
+import org.bee.util.InfoHolder;
 
 /**
  * @author <a href="Dmitriy@mochamail.com">Dmitriy Rogatkin</a>
  *
- * Provide class description here
+ *         Provide class description here
  */
 public class OnExit extends AbstractBlock {
 	protected If ifClause;
+	
 	/**
 	 * @param xpath
 	 */
@@ -20,15 +22,17 @@ public class OnExit extends AbstractBlock {
 		super(xpath);
 		// TODO Auto-generated constructor stub
 	}
-
+	
 	public void childDone(Instruction child) {
 		if (child instanceof If && ifClause == null)
 			ifClause = (If) child;
 		else
 			logger.severe("Only 'if' and only one is allowed on exit.");
 	}
-
-	/* (non-Javadoc)
+	
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.bee.processor.Instruction#eval()
 	 */
 	public InfoHolder eval() {
@@ -37,5 +41,5 @@ public class OnExit extends AbstractBlock {
 		logger.severe("No 'if' defined in exit block");
 		return null;
 	}
-
+	
 }

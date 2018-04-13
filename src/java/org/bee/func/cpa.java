@@ -24,17 +24,18 @@
  */
 
 package org.bee.func;
+
 import java.util.List;
 import java.util.ArrayList;
 
 /**
  * @author Dmitriy
  *
- * function copy but append if destination exists 
+ *         function copy but append if destination exists
  */
 public class cpa extends cp {
-	public static List < String > eval(String...copyPairs) {
-		List < String > result = new ArrayList < String > ();
+	public static List<String> eval(String... copyPairs) {
+		List<String> result = new ArrayList<String>();
 		for (int i = 0; i < copyPairs.length - 1; i += 2) {
 			new cp().copy(result, copyPairs[i], copyPairs[i + 1], true);
 		}

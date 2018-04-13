@@ -8,17 +8,17 @@ package org.bee.util;
 import java.util.logging.LogManager;
 
 public class Logger {
-
+	
 	public static java.util.logging.Logger logger;
-
+	
 	static {
-		logger = java.util.logging.Logger.getLogger("Bee" /*, resourceBundleName*/);
+		logger = java.util.logging.Logger.getLogger("Bee" /* , resourceBundleName */);
 		LogManager.getLogManager().addLogger(logger);
 	}
-
+	
 	public static void addLoggerClass(String className) {
 		try {
-			LogManager.getLogManager().addLogger(logger = (java.util.logging.Logger)Class.forName(className).newInstance());
+			LogManager.getLogManager().addLogger(logger = (java.util.logging.Logger) Class.forName(className).newInstance());
 		} catch (Error e) {
 			logger.severe("An error happened at initiation or adding logger class " + className + " " + e);
 		} catch (Exception e) {

@@ -28,10 +28,10 @@ package org.bee.func;
 /**
  * @author Dmitriy
  *
- * function like write but append if destination exists
+ *         function like write but append if destination exists
  */
 public class writea extends write {
-	public static boolean eval(String...params) {
+	public static boolean eval(String... params) {
 		return write(true, params);
 	}
 }
