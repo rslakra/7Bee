@@ -11,11 +11,19 @@ export JSCH=${JSCH_HOME}/jsch-0.1.54.jar
 export JAVA_HOME=$(/usr/libexec/java_home)
 #JAVA_HOME=$(type -p java|xargs readlink -f|xargs dirname|xargs dirname)
 
-mkdir -p "${JSCH_HOME}"
-mkdir -p "${JDEPEND_HOME}/lib"
 echo
-echo "Cleaning JDepend"
-rm -rf ${JDEPEND_HOME}/lib/*.*
+echo "Removing '${JDEPEND_HOME}/lib' file(s) recursively ..."
+echo
+find ${JDEPEND_HOME}/lib -print -exec rm -rf {} \;
+
+echo
+echo "Removing './lib' file(s) recursively ..."
+echo
+find ./lib -print -exec rm -rf {} \;
+
+# Make Folders, if not exist.
+mkdir -p -v "${JSCH_HOME}"
+mkdir -p -v "${JDEPEND_HOME}/lib"
 
 echo
 echo "Compile JDepend"
@@ -23,15 +31,11 @@ echo
 $JAVA_HOME/bin/javac -sourcepath ${JDEPEND_HOME}/src/java -d ${JDEPEND_HOME}/lib ${JDEPEND_HOME}/src/java/jdepend/framework/*.java
 
 rc=$?; if [ $rc != 0 ]; then exit $rc; fi
-mkdir -p lib
+mkdir -p -v lib
 if [ ! -e "$JSCH" ]; then
 	curl --output "${JSCH}" http://central.maven.org/maven2/com/jcraft/jsch/0.1.54/jsch-0.1.54.jar 
 	rc=$?; if [ $rc != 0 ]; then echo "Cant'd download ${JSCH}, Check Internet Connection!"; exit $rc; fi
 fi
-
-echo
-echo "Cleaning JDepend"
-rm -rf ./lib/*.*
 
 echo
 echo "Compile 7Bee"
