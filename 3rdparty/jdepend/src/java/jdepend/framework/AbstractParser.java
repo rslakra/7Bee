@@ -19,8 +19,6 @@ public abstract class AbstractParser {
 	private ArrayList<ParserListener> parseListeners;
 	private PackageFilter filter;
 	
-	public static boolean DEBUG = false;
-	
 	/**
 	 * Constructs an <code>AbstractParser</code> instance
 	 * with the default package filter.
@@ -105,7 +103,7 @@ public abstract class AbstractParser {
 	 * @param message
 	 */
 	protected void debug(String message) {
-		if (DEBUG) {
+		if (BeeHelper.isDebugEnabled()) {
 			System.err.println(message);
 		}
 	}

@@ -29,7 +29,7 @@ public class PackageFilter {
 	 * file, if it exists.
 	 */
 	public PackageFilter() {
-		this(new ArrayList());
+		this(new ArrayList<String>());
 		PropertyConfigurator config = new PropertyConfigurator();
 		addPackages(config.getFilteredPackages());
 	}

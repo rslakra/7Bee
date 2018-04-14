@@ -134,9 +134,9 @@ public interface Instruction {
 		/**
 		 * Gives access to name space content
 		 * 
-		 * < String, InfoHolder, Object >
+		 * <String, InfoHolder, Object>
 		 * <String, String, ? extends Object>
-		 * < String, InfoHolder, ScopeType >
+		 * <String, InfoHolder, ScopeType>
 		 */
 		Iterator<InfoHolder<String, InfoHolder, Object>> iterator();
 		

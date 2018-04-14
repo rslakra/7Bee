@@ -52,19 +52,29 @@ public class rm {
 				// TODO: it can be calculated one and then spread, however it
 				// isn't big deal
 				delMask = Misc.wildCardToRegExpr(this.parts[parts.length - 1]);
-			else
+			else {
 				delMask = pat;
+			}
 		}
 		
+		/**
+		 * 
+		 * @param pathname
+		 * @return
+		 * @see java.io.FileFilter#accept(java.io.File)
+		 */
 		public boolean accept(File pathname) {
 			String name = pathname.getName();
 			if (name.matches(pat)) {
 				if (pathname.isFile()) {
-					if (name.matches(delMask))
+					if (name.matches(delMask)) {
 						return !delete(pathname);
-				} else if (pathname.isDirectory() && pos < parts.length - 1)
+					}
+				} else if (pathname.isDirectory() && pos < parts.length - 1) {
 					return !rm.delete(pathname, parts, pos + 1) && pathname.delete() || !pathname.delete();
+				}
 			}
+			
 			return false;
 		}
 		

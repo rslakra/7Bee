@@ -3,6 +3,8 @@
 // Created on Jun 28, 2007
 package org.bee.processor;
 
+import static org.bee.util.Logger.logger;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -13,6 +15,7 @@ public final class Else extends Block {
 	}
 	
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		logger.finest("Else: startElement(" + uri + ", " + localName + ", " + qName + ", " + attributes + ")");
 		super.startElement(uri, localName, qName, attributes);
 		blockType = BlockType.t_else;
 	}

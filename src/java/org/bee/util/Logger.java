@@ -7,22 +7,34 @@ package org.bee.util;
  */
 import java.util.logging.LogManager;
 
-public class Logger {
+public final class Logger {
 	
+	/** logger */
 	public static java.util.logging.Logger logger;
 	
 	static {
-		logger = java.util.logging.Logger.getLogger("Bee" /* , resourceBundleName */);
+		logger = java.util.logging.Logger.getLogger("Bee");
 		LogManager.getLogManager().addLogger(logger);
 	}
 	
-	public static void addLoggerClass(String className) {
+	/** singleton instance. */
+	private Logger() {
+		throw new RuntimeException("Object creation is not allowed for this object!");
+	}
+	
+	/**
+	 * Adds the logger for the <code>logClassName</code>.
+	 * 
+	 * @param logClassName
+	 */
+	public static final void addLoggerClass(String logClassName) {
 		try {
-			LogManager.getLogManager().addLogger(logger = (java.util.logging.Logger) Class.forName(className).newInstance());
-		} catch (Error e) {
-			logger.severe("An error happened at initiation or adding logger class " + className + " " + e);
-		} catch (Exception e) {
-			logger.severe("An exception happened at initiation or adding logger class " + className + " " + e);
+			logger = (java.util.logging.Logger) Class.forName(logClassName).newInstance();
+			LogManager.getLogManager().addLogger(logger);
+		} catch (Error ex) {
+			logger.severe("An error happened at initiation or adding logger class:" + logClassName + " " + ex);
+		} catch (Exception ex) {
+			logger.severe("An exception happened at initiation or adding logger class:" + logClassName + " " + ex);
 		}
 	}
 }

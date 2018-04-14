@@ -17,12 +17,15 @@ public class lt {
 		if (op1.getValue() == null) {
 			result = (op2 != null && op2.getValue() != null);
 		} else if (op2.getValue() != null) {
-			if (op1.getType() != null)
+			if (op1.getType() != null) {
 				result = op1.getType().compareTo(op2.getType()) < 0;
-			else
+			} else {
 				result = op1.getValue().compareTo(op2.getValue()) < 0;
-		} else
+			}
+		} else {
 			result = Boolean.FALSE;
+		}
+		
 		return new InfoHolder<String, String, Boolean>("lt", result.toString(), result);
 	}
 	

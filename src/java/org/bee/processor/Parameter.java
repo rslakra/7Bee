@@ -15,6 +15,10 @@ import org.bee.util.InfoHolder;
 public class Parameter extends Value {
 	protected AbstractBlock calculatedValue;
 	
+	/**
+	 * 
+	 * @param xpath
+	 */
 	public Parameter(String xpath) {
 		super(xpath);
 	}

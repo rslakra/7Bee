@@ -33,6 +33,7 @@ $JAVA_HOME/bin/javac -sourcepath ${JDEPEND_HOME}/src/java -d ${JDEPEND_HOME}/lib
 rc=$?; if [ $rc != 0 ]; then exit $rc; fi
 mkdir -p -v lib
 if [ ! -e "$JSCH" ]; then
+	echo "Downloading 'jsch-0.1.54.jar' file ..."
 	curl --output "${JSCH}" http://central.maven.org/maven2/com/jcraft/jsch/0.1.54/jsch-0.1.54.jar 
 	rc=$?; if [ $rc != 0 ]; then echo "Cant'd download ${JSCH}, Check Internet Connection!"; exit $rc; fi
 fi

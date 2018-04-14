@@ -7,30 +7,32 @@ package org.bee.func;
 import java.util.Collection;
 import java.util.Stack;
 
+import jdepend.framework.BeeHelper;
+
 /**
  * this function is arithmetic calculator
  * 
  * @author Dmitriy Rogatkin
- * 
  */
 public class calc {
-	enum opers {
-		nop,
-		left_par,
-		right_par,
-		plus,
-		minus,
-		mul,
-		div,
-		pwr,
-		sqr,
-		sqrt,
-		cos,
-		sin,
-		tan,
-		atan,
-		log,
-		ln
+	
+	enum Operator {
+		NONE,
+		LEFT_PARENTHESIS,
+		RIGHT_PARENTHESIS,
+		PLUS,
+		MINUS,
+		MULTIPLY,
+		DIVISION,
+		POWER,
+		SQR,
+		SQRT,
+		COS,
+		SIN,
+		TAN,
+		ATAN,
+		LOG10,
+		LOG
 	};
 	
 	/**
@@ -47,22 +49,20 @@ public class calc {
 	 */
 	public static Object eval(Object... args) {
 		if (args[0] instanceof Collection) {
-			args = ((Collection) args[0]).toArray();
+			args = ((Collection<?>) args[0]).toArray();
 		}
 		
-		Stack<StateHolder> mem = new Stack<StateHolder>();
+		Stack<StateHolder> stateHolders = new Stack<StateHolder>();
 		double result = 0d;
 		double current_oprd;
-		opers current_oper, non_committed = opers.plus;
-		opers deffered_oper = opers.nop;
-		double current_result = result;
-		current_oper = opers.plus;
+		Operator currentOperator, nonCommitted = Operator.PLUS;
+		Operator defferedOperator = Operator.NONE;
+		double currentResult = result;
+		currentOperator = Operator.PLUS;
 		for (Object arg : args) {
 			current_oprd = 0d;
-			if (DEBUG)
-				System.err.printf("oper %s %f %s = %f  deferred %s/%s%n", current_oper, current_result, arg, result, non_committed, deffered_oper);
-			if (arg == null) {
-			} else {
+			BeeHelper.debug("oper %s %f %s = %f  deferred %s/%s%n", currentOperator, currentResult, arg, result, nonCommitted, defferedOperator);
+			if (arg != null) {
 				if (arg instanceof Number) {
 					current_oprd = ((Number) arg).doubleValue();
 				} else {
@@ -71,165 +71,187 @@ public class calc {
 						try {
 							current_oprd = Double.parseDouble(normVal);
 						} catch (NumberFormatException nfe) {
-							opers last_oper = current_oper;
-							current_oper = str2oper(normVal);
-							switch (current_oper) {
-								case plus:
-								case minus:
-									switch (non_committed) {
-										case plus:
-											result += current_result;
+							Operator lastOperator = currentOperator;
+							currentOperator = toOperator(normVal);
+							switch (currentOperator) {
+								case PLUS:
+								case MINUS:
+									switch (nonCommitted) {
+										case PLUS:
+											result += currentResult;
 											break;
-										case minus:
-											result -= current_result;
+										case MINUS:
+											result -= currentResult;
+											break;
+										default:
 											break;
 									}
-									non_committed = current_oper;
-									deffered_oper = opers.nop;
+									nonCommitted = currentOperator;
+									defferedOperator = Operator.NONE;
 									break;
-								case left_par:
+								case LEFT_PARENTHESIS:
 									// push current status in stack and reinit
 									// as in
 									// start
-									mem.push(new StateHolder(last_oper, non_committed, deffered_oper, result, current_result));
-									current_result = result = 0d;
-									current_oper = opers.plus;
-									non_committed = opers.nop;
-									deffered_oper = opers.nop;
+									stateHolders.push(new StateHolder(lastOperator, nonCommitted, defferedOperator, result, currentResult));
+									currentResult = result = 0d;
+									currentOperator = Operator.PLUS;
+									nonCommitted = Operator.NONE;
+									defferedOperator = Operator.NONE;
 									break;
-								case right_par:
-									if (mem.isEmpty())
+								case RIGHT_PARENTHESIS:
+									if (stateHolders.isEmpty()) {
 										throw new RuntimeException("No matching open ( for this )");
-									switch (non_committed) {
-										case plus:
-											result += current_result;
+									}
+									switch (nonCommitted) {
+										case PLUS:
+											result += currentResult;
 											break;
-										case minus:
-											result -= current_result;
+										case MINUS:
+											result -= currentResult;
+											break;
+										default:
 											break;
 									}
 									
-									StateHolder sh = mem.pop();
+									StateHolder stateHolder = stateHolders.pop();
 									current_oprd = result;
-									last_oper = current_oper;
-									current_oper = sh.oper;
-									non_committed = sh.non_comit_oper;
-									current_result = sh.cur_res;
-									result = sh.res;
-									deffered_oper = sh.deffered;
+									lastOperator = currentOperator;
+									currentOperator = stateHolder.oper;
+									nonCommitted = stateHolder.non_comit_oper;
+									currentResult = stateHolder.cur_res;
+									result = stateHolder.res;
+									defferedOperator = stateHolder.deffered;
 									break; // to pass through
-								case mul:
-								case div:
-								case pwr:
-									deffered_oper = current_oper;
+								case MULTIPLY:
+								case DIVISION:
+								case POWER:
+									defferedOperator = currentOperator;
 									break;
 								default:
 								
 							}
-							if (last_oper != opers.right_par)
+							
+							if (lastOperator != Operator.RIGHT_PARENTHESIS) {
 								continue;
+							}
 						}
 					}
 				}
 				// found numeric operand
-				switch (current_oper) {
-					case sin:
+				switch (currentOperator) {
+					case SIN:
 						current_oprd = Math.sin(current_oprd);
 						break;
-					case cos:
+					case COS:
 						current_oprd = Math.cos(current_oprd);
 						break;
-					case tan:
+					case TAN:
 						current_oprd = Math.tan(current_oprd);
 						break;
-					case atan:
+					case ATAN:
 						current_oprd = Math.atan(current_oprd);
 						break;
-					case log:
+					case LOG10:
 						current_oprd = Math.log10(current_oprd);
 						break;
-					case ln:
+					case LOG:
 						current_oprd = Math.log(current_oprd);
 						break;
-					case sqrt:
+					case SQRT:
 						current_oprd = Math.sqrt(current_oprd);
 						break;
-					case sqr:
+					case SQR:
 						current_oprd = current_oprd * current_oprd;
 						break;
-				}
-				if (deffered_oper != opers.nop)
-					current_oper = deffered_oper;
-				switch (current_oper) {
-					case mul:
-						current_result *= current_oprd;
-						break;
-					case div:
-						current_result /= current_oprd;
-						break;
-					case pwr:
-						current_result = Math.pow(current_result, current_oprd);
-						break;
-					case plus:
-					case minus:
-					case nop:
-						non_committed = current_oper;
 					default:
-						current_result = current_oprd;
+						break;
+				}
+				
+				if (defferedOperator != Operator.NONE) {
+					currentOperator = defferedOperator;
+				}
+				
+				switch (currentOperator) {
+					case MULTIPLY:
+						currentResult *= current_oprd;
+						break;
+					case DIVISION:
+						currentResult /= current_oprd;
+						break;
+					case POWER:
+						currentResult = Math.pow(currentResult, current_oprd);
+						break;
+					case PLUS:
+					case MINUS:
+					case NONE:
+						nonCommitted = currentOperator;
+					default:
+						currentResult = current_oprd;
 				}
 			}
 		}
-		switch (non_committed) {
-			case plus:
-				result += current_result;
+		
+		switch (nonCommitted) {
+			case PLUS:
+				result += currentResult;
 				break;
-			case minus:
-				result -= current_result;
+			case MINUS:
+				result -= currentResult;
+				break;
+			default:
 				break;
 		}
+		
 		return result;
 	}
 	
-	static private opers str2oper(String s) {
-		if ("+".equals(s)) {
-			return opers.plus;
-		} else if ("-".equals(s)) {
-			return opers.minus;
-		} else if ("*".equals(s)) {
-			return opers.mul;
-		} else if ("/".equals(s)) {
-			return opers.div;
-		} else if ("(".equals(s)) {
-			return opers.left_par;
-		} else if (")".equals(s)) {
-			return opers.right_par;
-		} else if ("power".equals(s)) {
-			return opers.pwr;
-		} else if ("sqr".equals(s)) {
-			return opers.sqr;
-		} else if ("sqrt".equals(s)) {
-			return opers.sqrt;
-		} else if ("sin".equals(s)) {
-			return opers.sin;
-		} else if ("cos".equals(s)) {
-			return opers.cos;
-		} else if ("tan".equals(s)) {
-			return opers.tan;
-		} else if ("atan".equals(s)) {
-			return opers.atan;
-		} else if ("log".equals(s)) {
-			return opers.log;
-		} else if ("ln".equals(s)) {
-			return opers.ln;
-		} else
-			throw new RuntimeException("Unrecognized parameter:" + s);
+	/**
+	 * 
+	 * @param string
+	 * @return
+	 */
+	static private Operator toOperator(String string) {
+		if ("+".equals(string)) {
+			return Operator.PLUS;
+		} else if ("-".equals(string)) {
+			return Operator.MINUS;
+		} else if ("*".equals(string)) {
+			return Operator.MULTIPLY;
+		} else if ("/".equals(string)) {
+			return Operator.DIVISION;
+		} else if ("(".equals(string)) {
+			return Operator.LEFT_PARENTHESIS;
+		} else if (")".equals(string)) {
+			return Operator.RIGHT_PARENTHESIS;
+		} else if ("power".equals(string)) {
+			return Operator.POWER;
+		} else if ("sqr".equals(string)) {
+			return Operator.SQR;
+		} else if ("sqrt".equals(string)) {
+			return Operator.SQRT;
+		} else if ("sin".equals(string)) {
+			return Operator.SIN;
+		} else if ("cos".equals(string)) {
+			return Operator.COS;
+		} else if ("tan".equals(string)) {
+			return Operator.TAN;
+		} else if ("atan".equals(string)) {
+			return Operator.ATAN;
+		} else if ("log".equals(string)) {
+			return Operator.LOG10;
+		} else if ("ln".equals(string)) {
+			return Operator.LOG;
+		} else {
+			throw new RuntimeException("Unrecognized parameter:" + string);
+		}
 	}
 	
 	static class StateHolder {
-		opers oper, non_comit_oper, deffered;
+		Operator oper, non_comit_oper, deffered;
 		double res, cur_res;
 		
-		StateHolder(opers o, opers nco, opers def, double r, double cr) {
+		StateHolder(Operator o, Operator nco, Operator def, double r, double cr) {
 			oper = o;
 			non_comit_oper = nco;
 			res = r;
@@ -237,6 +259,4 @@ public class calc {
 			deffered = def;
 		}
 	}
-	
-	private final static boolean DEBUG = false;
 }

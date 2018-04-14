@@ -35,100 +35,111 @@ public class Task extends Function {
 	// TODO review loggin in case of error handling
 	// TODO add run exception report
 	public static final String RESULT_CODE_VAR_NAME = "resultcode";
-	
 	public static final String PATH = "path";
-	
 	public static final String CLASSPATH = "CLASSPATH";
 	
 	protected String exec;
-	
 	protected String code;
-	
 	protected String path;
 	
 	protected String stdErrVar, stdOutVar, stdInVar;
-	
 	protected OnExit onExitHandler;
-	
-	protected boolean lockSM;
+	protected boolean lockSecurityManager;
 	
 	protected OnException onExceptionHandler;
 	
+	/**
+	 * 
+	 * @param xpath
+	 */
 	public Task(String xpath) {
 		super(xpath);
 	}
 	
+	/**
+	 * 
+	 * @param child
+	 * @see org.bee.processor.Function#childDone(org.bee.processor.Instruction)
+	 */
 	public void childDone(Instruction child) {
-		if (child instanceof OnException) // not quite robust, since order is
-											// important
+		if (child instanceof OnException) {
+			// not quite robust, since order is important
 			onExceptionHandler = (OnException) child;
-		else if (child instanceof OnExit)
+		} else if (child instanceof OnExit) {
 			onExitHandler = (OnExit) child;
-		else
+		} else {
 			super.childDone(child);
+		}
 	}
 	
+	/**
+	 * 
+	 * @return
+	 * @see org.bee.processor.Function#eval()
+	 */
 	public InfoHolder eval() {
 		// logger.entering("task","eval");
 		String pathValue = path == null ? null : lookupStringValue(path);
 		InfoHolder result = null;
 		InfoHolder<String, InfoHolder, Object> extCPVal = lookupOnTop(RESERVE_CLASS_LIB);
 		if (exec != null) {
-			String e = lookupStringValue(exec);
-			if (e != null) {
+			String execString = lookupStringValue(exec);
+			if (execString != null) {
 				List<String> command = new ArrayList<String>(parameters.size() + 1);
-				command.add(e);
+				command.add(execString);
 				Map<String, String> addEnv = new HashMap<String, String>();
 				fillParameters(command, addEnv);
 				try {
 					logger.fine(command.toString());
 					logger.finest(System.getSecurityManager() != null ? "Security maneger set." : "");
-					ProcessBuilder pb = new ProcessBuilder(command);
-					Map<String, String> environment = pb.environment();
+					final ProcessBuilder processBuilder = new ProcessBuilder(command);
+					Map<String, String> environment = processBuilder.environment();
 					if (pathValue != null) {
 						environment.put(PATH, pathValue + File.pathSeparatorChar + environment.get(PATH));
 					}
 					// add class path
 					if (extCPVal != null && extCPVal.getValue() != null) {
 						String classPath = environment.get(CLASSPATH);
-						if (classPath == null)
+						if (classPath == null) {
 							classPath = (String) extCPVal.getValue().getValue();
-						else
+						} else {
 							classPath = classPath + File.pathSeparatorChar + (String) extCPVal.getValue().getValue();
+						}
 						environment.put(CLASSPATH, classPath);
 					}
 					environment.putAll(addEnv);
 					String workingDirectory = lookupStringValue(RESERVE_NAME_DIR);
 					if (workingDirectory != null) {
-						pb.directory(new File(workingDirectory));
+						processBuilder.directory(new File(workingDirectory));
 					} else {
-						pb.directory(new File(System.getProperty("user.dir")));
+						processBuilder.directory(new File(System.getProperty("user.dir")));
 					}
 					
-					Process p = pb.start();
-					StreamCatcher errorGobbler = new StreamCatcher(p.getErrorStream(), stdErrVar == null ? System.err : null);
-					StreamCatcher outputGobbler = new StreamCatcher(p.getInputStream(), stdOutVar == null ? System.out : null);
+					final Process process = processBuilder.start();
+					StreamCatcher errorGobbler = new StreamCatcher(process.getErrorStream(), stdErrVar == null ? System.err : null);
+					StreamCatcher outputGobbler = new StreamCatcher(process.getInputStream(), stdOutVar == null ? System.out : null);
 					
 					errorGobbler.start();
 					outputGobbler.start();
 					
 					InFeeder inFeeder = null;
 					if (stdInVar != null) {
-						inFeeder = new InFeeder(lookupStringValue(stdInVar), p.getOutputStream());
+						inFeeder = new InFeeder(lookupStringValue(stdInVar), process.getOutputStream());
 						inFeeder.start();
 					} else if (lookupStringValue(RESERVE_OPTION_NOINPUT) == null) {
-						inFeeder = new InFeeder(System.in, p.getOutputStream());
+						inFeeder = new InFeeder(System.in, process.getOutputStream());
 						inFeeder.start();
 					}
 					try {
-						result = new InfoHolder<String, String, Object>("onexit", String.valueOf(p.waitFor()));
+						result = new InfoHolder<String, String, Object>("onexit", String.valueOf(process.waitFor()));
 						if (inFeeder != null) {
 							inFeeder.terminate();
 							inFeeder.join();
 						}
 						outputGobbler.join();
 						errorGobbler.join();
-					} catch (InterruptedException ie) {
+					} catch (InterruptedException ex) {
+						// ignore me!
 					}
 					
 					// TODO: use flag to understand when out needed
@@ -153,11 +164,12 @@ public class Task extends Function {
 					if (onExitHandler != null) {
 						onExitHandler.eval();
 					}
-				} catch (IOException ioe) {
-					getNameSpace().inScope(new InfoHolder<String, InfoHolder, Object>(RESERVE_NAME_ERROR, new InfoHolder<String, String, IOException>(RESERVE_NAME_ERROR, ioe.getMessage(), ioe)));
-					logger.severe("Can't start " + e + " " + ioe);
-					if (onExceptionHandler != null)
+				} catch (IOException ex) {
+					getNameSpace().inScope(new InfoHolder<String, InfoHolder, Object>(RESERVE_NAME_ERROR, new InfoHolder<String, String, IOException>(RESERVE_NAME_ERROR, ex.getMessage(), ex)));
+					logger.severe("Can't start '" + execString + "', Error:" + ex);
+					if (onExceptionHandler != null) {
 						onExceptionHandler.eval();
+					}
 				}
 			}
 		} else if (code != null) {
@@ -176,17 +188,18 @@ public class Task extends Function {
 			ClassLoader origLoader = null;
 			try {
 				ClassLoader extClassLoader = null;
-				Class codeClass = null;
+				Class<?> codeClass = null;
 				if (pathValue != null) {
 					String[] pathComponents = pathValue.split(File.pathSeparator);
 					List<URL> pathComponentUrls = new ArrayList<URL>(pathComponents.length);
 					for (String pathComponent : pathComponents) {
 						File pathFile = new File(pathComponent);
 						try {
-							if (pathFile.exists())
+							if (pathFile.exists()) {
 								pathComponentUrls.add(pathFile.toURI().toURL());
-							else
+							} else {
 								pathComponentUrls.add(new URL(pathComponent));
+							}
 							pathComponentUrls.get(pathComponentUrls.size() - 1).openStream();
 						} catch (MalformedURLException mfue) {
 							logger.warning("Path component is not well formed, or doesn't exist => '" + pathComponent + "'(" + pathFile.exists() + "), " + mfue);
@@ -194,25 +207,33 @@ public class Task extends Function {
 							logger.warning("Path component " + pathComponent + " can't be accessed, " + ioe);
 						}
 					}
-					if (extCP != null)
+					
+					if (extCP != null) {
 						pathComponentUrls.addAll(extCP);
+					}
 					// logger.finest("class path:" +
 					// Arrays.asList(pathComponentUrls));
 					codeClass = Class.forName(code, false, extClassLoader = new URLClassLoader(pathComponentUrls.toArray(new URL[pathComponentUrls.size()]), this.getClass().getClassLoader()));
 				} else {
-					if (extCP == null)
+					if (extCP == null) {
 						codeClass = Class.forName(code);
-					else
+					} else {
 						codeClass = Class.forName(code, false, extClassLoader = new URLClassLoader(extCP.toArray(new URL[extCP.size()]), this.getClass().getClassLoader()));
+					}
 				}
 				workDir = lookupStringValue(RESERVE_NAME_DIR);
-				if (workDir != null)
+				if (workDir != null) {
 					workDir = System.setProperty("user.dir", new File(workDir).getAbsolutePath());
-				if (logger.isLoggable(FINE))
+				}
+				if (logger.isLoggable(FINE)) {
 					logger.fine(code + ".main(" + args.toString() + ") in " + System.getProperty("user.dir"));
-				if (useSM)
+				}
+				
+				if (useSM) {
 					Policy.getPolicy().refresh();
-				lockSM = true;
+				}
+				
+				lockSecurityManager = true;
 				System.setSecurityManager(new SecurityManager() {
 					public void checkExit(int status) {
 						/*
@@ -237,37 +258,39 @@ public class Task extends Function {
 					}
 					
 					public void checkPermission(Permission perm) {
-						if (!lockSM && perm.getName().equals("setSecurityManager")) {
+						if (!lockSecurityManager && perm.getName().equals("setSecurityManager")) {
 							// TODO: make sure that it's called from right place
 							return;
 						}
-						if (useSM)
-							// try {
+						
+						if (useSM) {
 							super.checkPermission(perm);
-						// } catch(SecurityException se_) {
-						// logger.log(FINE, "Stack trace:", se_);
-						// throw se_;
-						// }
+						}
 					}
 				});
+				
 				if (extClassLoader != null) {
 					origLoader = Thread.currentThread().getContextClassLoader();
 					Thread.currentThread().setContextClassLoader(extClassLoader);
 				}
 				
 				Object resultObject = getMethod(codeClass).invoke(null, new Object[] { args.toArray(new String[args.size()]) });
-				if (resultObject instanceof Number)
+				if (resultObject instanceof Number) {
 					resultCode = ((Number) resultObject).intValue();
-				else
+				} else {
 					resultCode = 0;
+				}
+				
 			} catch (Error er) {
 				// logger.severe("Error in call " + code + ".main(String...args)
 				// " + er);
 				getNameSpace().inScope(new InfoHolder<String, InfoHolder, Object>(RESERVE_NAME_ERROR, new InfoHolder<String, String, Error>(RESERVE_NAME_ERROR, er.getMessage(), er)));
-				if (logger.isLoggable(WARNING))
+				if (logger.isLoggable(WARNING)) {
 					logger.throwing(code, ".main(" + args + ") ", er);
-				if (onExceptionHandler != null)
+				}
+				if (onExceptionHandler != null) {
 					onExceptionHandler.eval();
+				}
 			} catch (NullPointerException npe) {
 				// already reported ??
 				logger.throwing(code, "Unexpected internal problem:", npe);
@@ -279,16 +302,18 @@ public class Task extends Function {
 				logger.severe("Illegal access " + code + " " + iae);
 			} catch (java.security.AccessControlException ace) {
 				logger.severe("Access Control " + code + " " + ace);
-				if (logger.isLoggable(FINE))
+				if (logger.isLoggable(FINE)) {
 					logger.log(FINE, "Stack trace:", ace);
+				}
 			} catch (java.lang.reflect.InvocationTargetException ite) {
 				Throwable cause = ite.getCause();
 				if (cause instanceof SecurityException) {
 					Throwable securityCause = cause.getCause();
 					if (securityCause instanceof ProcessException) {
 						resultCode = ((ProcessException) securityCause).getExitCode();
-					} else
+					} else {
 						logger.log(SEVERE, "Invocation " + code + ".main(" + args + ")", cause);
+					}
 				} else {
 					getNameSpace().inScope(new InfoHolder<String, InfoHolder, Object>(RESERVE_NAME_ERROR, new InfoHolder<String, String, Throwable>(RESERVE_NAME_ERROR, ite.getCause() != null ? ite.getCause().toString() : ite.toString(), ite.getCause() != null ? ite.getCause() : ite)));
 					logger.log(SEVERE, "Invocation " + code + ".main(" + args + ")", cause);
@@ -296,19 +321,23 @@ public class Task extends Function {
 						onExceptionHandler.eval();
 				}
 			} finally {
-				lockSM = false;
+				lockSecurityManager = false;
 				System.setSecurityManager(origSM);
 				System.setProperties(origSystemProps);
-				if (origLoader != null)
+				if (origLoader != null) {
 					Thread.currentThread().setContextClassLoader(origLoader);
+				}
+				
 				// if (workDir != null)
 				// System.setProperty("user.dir", workDir);
 			}
 			// if (resultCode != 0)
 			getNameSpace().inScope(new InfoHolder<String, InfoHolder, Object>(RESULT_CODE_VAR_NAME, result = new InfoHolder<String, String, Object>(RESULT_CODE_VAR_NAME, String.valueOf(resultCode))));
-			if (onExitHandler != null)
+			if (onExitHandler != null) {
 				onExitHandler.eval();
+			}
 		}
+		
 		return result;
 	}
 	
@@ -317,7 +346,13 @@ public class Task extends Function {
 		return result == null || result.length() == 0 ? "main" : lookupStringValue(result);
 	}
 	
-	protected Method getMethod(Class codeClass) throws NoSuchMethodException {
+	/**
+	 * 
+	 * @param codeClass
+	 * @return
+	 * @throws NoSuchMethodException
+	 */
+	protected Method getMethod(Class<?> codeClass) throws NoSuchMethodException {
 		Method result = null;
 		try {
 			result = codeClass.getMethod(getName(), new Class[] { String[].class });
@@ -326,11 +361,19 @@ public class Task extends Function {
 		} catch (Throwable t) {
 			logger.severe("Other exception happened at obtaining method " + getName() + " at " + code + " " + t);
 		}
-		if (result != null && result.isAccessible() == false)
+		
+		if (result != null && result.isAccessible() == false) {
 			result.setAccessible(true);
+		}
+		
 		return result;
 	}
 	
+	/**
+	 * 
+	 * @param result
+	 * @param environment
+	 */
 	protected void fillParameters(List<String> result, Map<String, String> environment) {
 		for (Parameter parameter : parameters) {
 			InfoHolder<String, String, Object> pv = parameter.eval();
@@ -340,34 +383,51 @@ public class Task extends Function {
 				if (o != null) {
 					if (o instanceof Object[]) {
 						for (Object ov : (Object[]) o) {
-							if (ov != null)
+							if (ov != null) {
 								result.add(ov.toString());
+							}
 						}
 						continue;
 					} else if (o instanceof List) {
 						for (Object s : (List<Object>) o) {
-							if (s != null)
+							if (s != null) {
 								result.add(s.toString());
+							}
 						}
 						continue;
 					}
 				}
+				
 				if (parameter.getName() != null) {
-					if (parameterValue == null)
+					if (parameterValue == null) {
 						parameterValue = "";
+					}
 					if (type != Type.environment) {
 						System.setProperty(parameter.getName(), parameterValue);
-					} else if (environment != null)
+					} else if (environment != null) {
 						environment.put(parameter.getName(), parameterValue);
+					}
 					logger.finest("Parameter '" + parameter.getName() + "' was used to set a run System property or environment with " + parameterValue + ", and hasn't been added in a parameter list.");
 				} else if (parameterValue != null)
 					result.add(parameterValue);
-			} else
+			} else {
 				logger.warning("Parameter " + parameter + " was evaluated as 'null' and ignored.");
+			}
 		}
 	}
 	
+	/**
+	 * 
+	 * @param uri
+	 * @param localName
+	 * @param qName
+	 * @param attributes
+	 * @throws SAXException
+	 * @see org.bee.processor.AbstractBlock#startElement(java.lang.String,
+	 *      java.lang.String, java.lang.String, org.xml.sax.Attributes)
+	 */
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		logger.finest("Task: startElement(" + uri + ", " + localName + ", " + qName + ", " + attributes + ")");
 		super.startElement(uri, localName, qName, attributes);
 		exec = attributes.getValue("", ATTR_EXEC);
 		code = attributes.getValue("", ATTR_CODE);
@@ -377,6 +437,11 @@ public class Task extends Function {
 		stdInVar = attributes.getValue("", ATTR_STDIN);
 	}
 	
+	/**
+	 * 
+	 * @return
+	 * @see org.bee.processor.AbstractBlock#getAllowedAttributeNames()
+	 */
 	public String[] getAllowedAttributeNames() {
 		return Misc.merge(new String[] { ATTR_CODE, ATTR_EXEC, ATTR_PATH, ATTR_STDOUT, ATTR_ERROUT, ATTR_STDIN }, super.getAllowedAttributeNames());
 	}

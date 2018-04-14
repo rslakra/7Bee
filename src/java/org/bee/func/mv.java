@@ -4,8 +4,10 @@
 package org.bee.func;
 
 import java.io.File;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
+import jdepend.framework.BeeHelper;
 
 /**
  * @author <a href="dmitriy@mochamail.com">Dmitriy Rogatkin</a>
@@ -22,16 +24,27 @@ public class mv extends cp {
 		return result;
 	}
 	
+	/**
+	 * 
+	 * @param srcFile
+	 * @param destFile
+	 * @param append
+	 * @return
+	 * @see org.bee.func.cp#action(java.io.File, java.io.File, boolean)
+	 */
 	@Override
 	protected String action(File srcFile, File destFile, boolean append) {
-		if (DEBUG_)
-			System.out.printf("mv: plan to move %s %s\n", srcFile.toString(), destFile.toString());
-		else {
-			if (destFile.isDirectory())
+		if (BeeHelper.isDebugEnabled()) {
+			BeeHelper.debug("mv: plan to move %s %s\n", srcFile.toString(), destFile.toString());
+		} else {
+			if (destFile.isDirectory()) {
 				destFile = new File(destFile, srcFile.getName());
-			if (srcFile.renameTo(destFile) == false)
+			}
+			if (srcFile.renameTo(destFile) == false) {
 				return null;
+			}
 		}
+		
 		return srcFile.getName();
 	}
 }

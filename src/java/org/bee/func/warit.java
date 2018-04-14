@@ -22,6 +22,8 @@ import java.util.zip.ZipOutputStream;
 import org.bee.util.InfoHolder;
 import org.bee.util.Misc;
 
+import jdepend.framework.BeeHelper;
+
 /**
  * @author <a href="dmitriy@mochamail.com">Dmitriy Rogatkin </a>
  * 
@@ -77,7 +79,7 @@ public class warit {
 	public static final String WAR_EXT = ".war";
 	
 	protected enum Operation {
-		add, exclude, classes, libraries, file
+		ADD, EXCLUDE, CLASSES, LIBRARIES, FILE
 	};
 	
 	public static boolean eval(Object... args) {
@@ -86,8 +88,9 @@ public class warit {
 		}
 		
 		String warFileName = args[0].toString();
-		if (warFileName.toLowerCase().endsWith(WAR_EXT) == false)
+		if (warFileName.toLowerCase().endsWith(WAR_EXT) == false) {
 			warFileName += WAR_EXT;
+		}
 		ZipOutputStream warFile = null;
 		
 		try {
@@ -99,7 +102,7 @@ public class warit {
 				if (args[pos] instanceof Object[])
 					System.err.printf("warit:error: invalid type of parameter [%d] : %s, array of Object not supported%n", pos, Arrays.toString((Object[]) args[pos]));
 				else if (args[pos] instanceof Collection) {
-					args = insertTo(args, pos, (Collection) args[pos]);
+					args = insertTo(args, pos, (Collection<?>) args[pos]);
 				} else if (args[pos] == null) { // ignore
 					pos++;
 					continue;
@@ -110,23 +113,24 @@ public class warit {
 					pos++;
 					continue;
 				}
-				if (DEBUG_)
-					System.out.printf("Process %d (%s) as %s\n", pos, args[pos], op.getKey());
+				BeeHelper.debug("Process %d (%s) as %s\n", pos, args[pos], op.getKey());
 				boolean recurs = true;
 				switch (op.getKey()) {
-					case add:
-						for (String[] comps : parsePath(args[pos++]))
+					case ADD:
+						for (String[] comps : parsePath(args[pos++])) {
 							addPath(op.getValue(), warFile, comps[0], comps[1], null, true);
+						}
 						break;
-					case libraries:
+					case LIBRARIES:
 						recurs = false;
-					case classes:
-					case exclude:
-						for (String[] comps : parsePath(args[pos++]))
+					case CLASSES:
+					case EXCLUDE:
+						for (String[] comps : parsePath(args[pos++])) {
 							addPath(op.getValue(), warFile, comps[0], comps[1], (String) args[pos], recurs);
+						}
 						pos++;
 						break;
-					case file:
+					case FILE:
 						addContent(op.getValue(), warFile, args[pos++].toString().getBytes("UTF-8"));
 						break;
 				}
@@ -144,69 +148,100 @@ public class warit {
 		} catch (IOException ioe) {
 			System.err.printf("warit:error: %s\n", ioe);
 		} finally {
-			if (warFile != null)
-				try {
-					warFile.close();
-				} catch (IOException e) {
-				}
+			BeeHelper.closeSilently(warFile);
 		}
+		
 		return false;
 	}
 	
-	private static Object[] insertTo(Object[] args, int pos, Collection collection) {
+	/**
+	 * 
+	 * @param args
+	 * @param pos
+	 * @param collection
+	 * @return
+	 */
+	private static Object[] insertTo(Object[] args, int pos, Collection<?> collection) {
 		Object[] result = new Object[args.length + collection.size() - 1];
-		if (pos > 0)
+		if (pos > 0) {
 			System.arraycopy(args, 0, result, 0, pos);
+		}
+		
 		int i = pos;
-		for (Object o : collection)
-			result[i++] = o;
-		if (result.length > i)
+		for (Object object : collection) {
+			result[i++] = object;
+		}
+		if (result.length > i) {
 			System.arraycopy(args, pos + 1, result, i, args.length - pos - 1);
+		}
+		
 		return result;
 	}
 	
-	protected static String[][] parsePath(Object p) {
+	/**
+	 * 
+	 * @param path
+	 * @return
+	 */
+	protected static String[][] parsePath(Object path) {
 		int size = 0;
-		String result[][] = null;
-		if (p instanceof List) {
-			if (DEBUG_)
-				System.out.printf("Processing %s as List\n", p);
-			List pl = (List) p;
+		String[][] result = null;
+		if (path instanceof List) {
+			BeeHelper.debug("Processing %s as List\n", path);
+			List<?> pl = (List<?>) path;
 			size = pl.size();
 			result = new String[size][];
-			for (int i = 0; i < size; i++)
+			for (int i = 0; i < size; i++) {
 				result[i] = parseStringPath(pl.get(i).toString());
-		} else if (p instanceof Object[]) {
-			if (DEBUG_)
-				System.out.printf("Processing %s as an Array\n", p);
-			Object[] pa = (Object[]) p;
+			}
+		} else if (path instanceof Object[]) {
+			BeeHelper.debug("Processing %s as an Array\n", path);
+			Object[] pa = (Object[]) path;
 			size = pa.length;
 			result = new String[size][];
-			for (int i = 0; i < size; i++)
+			for (int i = 0; i < size; i++) {
 				result[i] = parseStringPath(pa[i].toString());
+			}
 		} else {
 			result = new String[1][];
-			result[0] = parseStringPath(p.toString());
+			result[0] = parseStringPath(path.toString());
 		}
 		return result;
 	}
 	
-	protected static String[] parseStringPath(String s) {
-		char[] cs = s.toCharArray();
+	/**
+	 * 
+	 * @param string
+	 * @return
+	 */
+	protected static String[] parseStringPath(String string) {
+		char[] cs = string.toCharArray();
 		int ls = -1;
 		for (int p = 0; p < cs.length; p++) {
 			char c = cs[p];
 			if (c == '*' || c == '?') {
-				return new String[] { s.substring(0, ls), s.substring(ls + 1) };
-			} else if (c == '/' || c == '\\')
+				return new String[] { string.substring(0, ls), string.substring(ls + 1) };
+			} else if (c == '/' || c == '\\') {
 				ls = p;
+			}
 		}
-		File f = new File(s);
-		if (f.isDirectory())
-			return new String[] { s, "*" };
-		return new String[] { s, "" };
+		
+		File file = new File(string);
+		if (file.isDirectory()) {
+			return new String[] { string, "*" };
+		}
+		
+		return new String[] { string, "" };
 	}
 	
+	/**
+	 * 
+	 * @param args
+	 * @param pos
+	 * @param warFile
+	 * @return
+	 * @throws IOException
+	 */
 	protected static int processWebXML(Object[] args, int pos, ZipOutputStream warFile) throws IOException {
 		InputStream wxis = null;
 		long fileTime = System.currentTimeMillis();
@@ -231,66 +266,98 @@ public class warit {
 		return pos + 1;
 	}
 	
+	/**
+	 * 
+	 * @param cmd
+	 * @return
+	 */
 	protected static InfoHolder<Operation, String, Object> parseCommand(String cmd) {
-		if (cmd.length() == 0)
+		if (cmd.length() == 0) {
 			return null;
+		}
+		
 		String prefix = null;
-		if (cmd.length() > 2)
+		if (cmd.length() > 2) {
 			prefix = cmd.substring(2).trim().replace('\\', '/');
+		}
+		
 		boolean isDir = prefix != null && prefix.length() > 0 && prefix.charAt(prefix.length() - 1) == '/';
 		char cmdChr = cmd.charAt(0);
-		if (cmdChr == 'A')
-			return new InfoHolder<Operation, String, Object>(Operation.add, prefix);
-		else if (cmdChr == 'E')
-			return new InfoHolder<Operation, String, Object>(Operation.exclude, prefix);
-		else if (cmdChr == 'C') {
+		if (cmdChr == 'A') {
+			return new InfoHolder<Operation, String, Object>(Operation.ADD, prefix);
+		} else if (cmdChr == 'E') {
+			return new InfoHolder<Operation, String, Object>(Operation.EXCLUDE, prefix);
+		} else if (cmdChr == 'C') {
 			prefix = prefix == null ? "WEB-INF/classes/" : new File("WEB-INF/classes", prefix).toString().replace('\\', '/') + (isDir ? "/" : "");
-			return new InfoHolder<Operation, String, Object>(Operation.classes, prefix);
+			return new InfoHolder<Operation, String, Object>(Operation.CLASSES, prefix);
 		} else if (cmdChr == 'L') {
 			prefix = prefix == null ? "WEB-INF/lib/" : new File("WEB-INF/lib", prefix).toString().replace('\\', '/') + (isDir ? "/" : "");
-			return new InfoHolder<Operation, String, Object>(Operation.libraries, prefix);
+			return new InfoHolder<Operation, String, Object>(Operation.LIBRARIES, prefix);
 		} else if (cmdChr == 'W') {
-			if (prefix != null)
-				return new InfoHolder<Operation, String, Object>(Operation.file, prefix);
+			if (prefix != null) {
+				return new InfoHolder<Operation, String, Object>(Operation.FILE, prefix);
+			}
 		}
+		
 		return null;
 	}
 	
+	/**
+	 * 
+	 * @param targPath
+	 * @param warStream
+	 * @param srcPath
+	 * @param fileMask
+	 * @param excludeMask
+	 * @param processDirectories
+	 * @throws IOException
+	 */
 	protected static void addPath(String targPath, ZipOutputStream warStream, String srcPath, String fileMask, String excludeMask, boolean processDirectories) throws IOException {
-		if (DEBUG_)
-			System.out.printf("Trying %s\n", srcPath);
+		BeeHelper.debug("Trying %s\n", srcPath);
 		File filePath = new File(srcPath);
 		if (filePath.isDirectory()) {
-			File[] files = filePath.listFiles(new FileFilterImpl(fileMask, excludeMask));
-			if (targPath == null)
+			File[] files = filePath.listFiles(new FileNameFilter(fileMask, excludeMask));
+			if (targPath == null) {
 				targPath = "";
-			else if (targPath.endsWith("/") == false)
+			} else if (targPath.endsWith("/") == false) {
 				targPath += '/';
+			}
+			
 			for (File file : files) {
-				if (processDirectories || file.isDirectory() == false)
+				if (processDirectories || file.isDirectory() == false) {
 					addPath(targPath + file.getName(), warStream, file.toString(), fileMask, excludeMask, processDirectories);
+				}
 			}
 		} else if (filePath.isFile()) {
 			Pattern excludePattern = patternFromWildCard(excludeMask);
-			if (excludePattern != null && excludePattern.matcher(filePath.getName()).matches())
+			if (excludePattern != null && excludePattern.matcher(filePath.getName()).matches()) {
 				return;
-			if (DEBUG_)
-				System.out.printf("adding %s to %s\n", filePath, targPath + '/' + filePath.getName());
-			try {
-				ZipEntry je = new ZipEntry(targPath == null ? filePath.getName() : targPath + (targPath.endsWith("/") ? filePath.getName() : ""));
-				je.setTime(filePath.lastModified());
-				warStream.putNextEntry(je);
-				Misc.copyStream(new FileInputStream(filePath), warStream, 0);
-			} catch (ZipException ze) {
-				if (ze.getMessage() != null && ze.getMessage().indexOf("duplicate entry") >= 0)
-					System.err.printf("warit:warning: %s, the entry skipped.\n", ze.getMessage());
-				else
-					throw ze;
 			}
-		} else
+			BeeHelper.debug("adding %s to %s\n", filePath, targPath + '/' + filePath.getName());
+			try {
+				ZipEntry zipEntry = new ZipEntry(targPath == null ? filePath.getName() : targPath + (targPath.endsWith("/") ? filePath.getName() : ""));
+				zipEntry.setTime(filePath.lastModified());
+				warStream.putNextEntry(zipEntry);
+				Misc.copyStream(new FileInputStream(filePath), warStream, 0);
+			} catch (ZipException ex) {
+				if (ex.getMessage() != null && ex.getMessage().indexOf("duplicate entry") >= 0)
+					System.err.printf("warit:warning: %s, the entry skipped.\n", ex.getMessage());
+				else {
+					throw ex;
+				}
+			}
+		} else {
 			System.err.printf("warit:error: not found %s\n", filePath);
+		}
 	}
 	
+	/**
+	 * 
+	 * @param targPath
+	 * @param warStream
+	 * @param content
+	 * @throws IOException
+	 */
 	protected static void addContent(String targPath, ZipOutputStream warStream, byte[] content) throws IOException {
 		InputStream is = new ByteArrayInputStream(content);
 		warStream.putNextEntry(new ZipEntry(targPath));
@@ -298,16 +365,22 @@ public class warit {
 		is.close();
 	}
 	
+	/**
+	 * 
+	 * @param wc
+	 * @return
+	 */
 	static protected Pattern patternFromWildCard(String wc) {
-		if (wc == null)
+		if (wc == null) {
 			return null;
+		}
 		return Pattern.compile(wc.replace("?", "[^/\\\\:]").replace("*", "[^/\\\\?:*]*"));
 	}
 	
-	protected static class FileFilterImpl implements FilenameFilter {
+	protected static class FileNameFilter implements FilenameFilter {
 		protected Pattern maskPattern, excludePattern;
 		
-		FileFilterImpl(String mask, String exclude) {
+		FileNameFilter(String mask, String exclude) {
 			maskPattern = patternFromWildCard(mask);
 			// TODO: consider exclude as ',' separated list, so split it by ','
 			// first
@@ -315,12 +388,18 @@ public class warit {
 			excludePattern = patternFromWildCard(exclude);
 		}
 		
+		/**
+		 * 
+		 * @param dir
+		 * @param name
+		 * @return
+		 * @see java.io.FilenameFilter#accept(java.io.File, java.lang.String)
+		 */
 		public boolean accept(File dir, String name) {
-			if (excludePattern != null)
+			if (excludePattern != null) {
 				return maskPattern.matcher(name).matches() && excludePattern.matcher(name).matches() == false;
+			}
 			return maskPattern.matcher(name).matches();
 		}
 	}
-	
-	protected static final boolean DEBUG_ = false;
 }

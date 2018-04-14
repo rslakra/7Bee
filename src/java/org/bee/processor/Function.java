@@ -4,8 +4,8 @@
 package org.bee.processor;
 
 import static java.util.logging.Level.SEVERE;
-import static org.bee.processor.Configuration.FUNCTIONS_PACKAGE;
 import static org.bee.processor.Configuration.FUNCTION_METHOD_NAME;
+import static org.bee.processor.Configuration.PKG_FUNCTIONS;
 import static org.bee.util.Logger.logger;
 
 import java.lang.reflect.InvocationTargetException;
@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.bee.util.InfoHolder;
+
+import jdepend.framework.BeeHelper;
 
 /**
  * @author <a href="Dmitriy@mochamail.com">Dmitriy Rogatkin</a>
@@ -60,11 +62,13 @@ public class Function extends AbstractBlock {
 		int lastSameType = 0;
 		for (int i = 0; i < callParameters.length; i++) {
 			Parameter param = parameters.get(i);
-			InfoHolder<String, String, Object> pv = param.eval();
-			if (pv != null) {
-				callParameters[i] = pv.getType();
+			BeeHelper.debug("param:" + param);
+			InfoHolder<String, String, Object> paramValue = param.eval();
+			if (paramValue != null) {
+				callParameters[i] = paramValue.getType();
+				logger.finest("callParameters[" + i + "]=" + callParameters[i]);
 				if (callParameters[i] == null) {
-					callParameters[i] = pv.getValue();
+					callParameters[i] = paramValue.getValue();
 				}
 			} else {
 				callParameters[i] = null;
@@ -122,9 +126,9 @@ public class Function extends AbstractBlock {
 		} catch (IllegalAccessException e) {
 			logger.severe("An exception in calling function '" + getName() + "': " + e);
 			logger.throwing(getName(), "eval", e);
-		} catch (InvocationTargetException e) {
-			logger.severe("An exception in called function '" + getName() + "': " + e.getCause());
-			logger.throwing(getName(), "eval", e.getCause());
+		} catch (InvocationTargetException ex) {
+			logger.severe("An exception in called function '" + getName() + "': " + ex.getCause());
+			logger.throwing(getName(), "eval", ex.getCause());
 		}
 		
 		return result;
@@ -132,7 +136,7 @@ public class Function extends AbstractBlock {
 	
 	/**
 	 * 
-	 * @param classOf
+	 * @param classType
 	 *            a target class to find method
 	 * @param name
 	 *            of method
@@ -144,8 +148,8 @@ public class Function extends AbstractBlock {
 	 *            searched
 	 * @return Method if found, and null if not.
 	 */
-	public Method getMethod(Class<?> classOf, String name, Class<?> paramPattern) {
-		if (classOf == null) {
+	public Method getMethod(Class<?> classType, String name, Class<?> paramPattern) {
+		if (classType == null) {
 			return null;
 		}
 		
@@ -158,29 +162,36 @@ public class Function extends AbstractBlock {
 			Arrays.fill(callParamClasses, (Class<?>) paramPattern);
 		}
 		try {
-			return classOf.getDeclaredMethod(name, callParamClasses);
-		} catch (NoSuchMethodException nsm) {
+			return classType.getDeclaredMethod(name, callParamClasses);
+		} catch (NoSuchMethodException ex) {
 			if (logger.isLoggable(Level.FINEST)) {
-				logger.finest("Method '" + name + "' with " + callParamClasses.length + ", or variable parameters not found, last exception: " + nsm);
+				logger.finest("Method '" + name + "' with " + callParamClasses.length + ", or variable parameters not found, last exception: " + ex);
 			}
 		}
 		
 		return null;
 	}
 	
+	/**
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public static Class<?> findFunctionClass(String name) {
 		if (name == null) {
 			return null;
 		}
 		
-		if (name.indexOf('.') < 0) {// consider as full qualified name
-			name = FUNCTIONS_PACKAGE + name;
+		if (name.indexOf('.') < 0) {
+			// consider as full qualified name
+			name = PKG_FUNCTIONS + name;
 		}
+		
 		try {
 			return Class.forName(name, true, Function.class.getClassLoader());
-		} catch (Error er) {
+		} catch (Error ex) {
 			// too bad
-			logger.severe("Function class " + name + " " + er);
+			logger.severe("Function class " + name + " " + ex);
 		} catch (Exception ex) {
 			logger.severe("Function class " + name + " not found or " + ex);
 		}

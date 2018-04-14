@@ -9,7 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import jdepend.framework.JavaHelper;
+import org.bee.util.FolderFilter;
+
+import jdepend.framework.BeeHelper;
 
 /**
  * @author <a href="dmitriy@mochamail.com">Dmitriy Rogatkin </a>
@@ -28,10 +30,16 @@ public class newerthan {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public static List eval(String srcPath, String dstPath) {
+	/**
+	 * 
+	 * @param srcPath
+	 * @param dstPath
+	 * @return
+	 */
+	public static List<String> eval(String srcPath, String dstPath) {
 		// TODO: add 3rd parameter for possible default result if null list
 		// happened
-		// System.out.printf("Parameters %s -> %s\n", srcPath, dstPath);
+		// BeeHelper.debug("Parameters %s -> %s\n", srcPath, dstPath);
 		ArrayList<String> result = new ArrayList<String>();
 		srcPath = normalize(srcPath);
 		dstPath = normalize(dstPath);
@@ -39,74 +47,85 @@ public class newerthan {
 		String destMask = extractFile(dstPath);
 		srcPath = extractPath(srcPath);
 		dstPath = extractPath(dstPath);
-		if (JavaHelper.isDebugEnabled()) {
-			
-			System.out.printf("newerthan:debug: sp %s sm %s dp %s dm %s in %s\n", new File(srcPath).getAbsolutePath(), srcMask, dstPath, destMask, new File("./").getAbsolutePath());
-		}
+		BeeHelper.debug("newerthan:debug: sp %s sm %s dp %s dm %s in %s\n", new File(srcPath).getAbsolutePath(), srcMask, dstPath, destMask, new File("./").getAbsolutePath());
 		processDirectory(result, new File(srcPath)/* .getAbsoluteFile() */, srcPath, srcMask, dstPath, destMask);
-		if (JavaHelper.isDebugEnabled()) {
-			
-			System.out.printf("newerthan:debug: result: %s\n", result);
-		}
+		BeeHelper.debug("newerthan:debug: result: %s\n", result);
 		return result;
 	}
 	
-	protected static String normalize(String s) {
+	/**
+	 * 
+	 * @param string
+	 * @return
+	 */
+	protected static String normalize(String string) {
 		assert File.separatorChar == '/' || File.separatorChar == '\\';
-		char tc = '\\';
-		if (File.separatorChar == tc) {
-			tc = '/';
+		char fileSeparator = '\\';
+		if (File.separatorChar == fileSeparator) {
+			fileSeparator = '/';
 		}
-		return s.replace(tc, File.separatorChar);
+		return string.replace(fileSeparator, File.separatorChar);
 	}
 	
-	protected static String extractPath(String s) {
-		int p = s.lastIndexOf(File.separatorChar);
-		if (p < 0) {
-			return "." + File.separatorChar;
+	/**
+	 * 
+	 * @param string
+	 * @return
+	 */
+	protected static String extractPath(String string) {
+		int lastIndex = string.lastIndexOf(File.separatorChar);
+		if (lastIndex < 0) {
+			return ("." + File.separatorChar);
+		} else {
+			return string.substring(0, lastIndex);
 		}
-		
-		return s.substring(0, p);
 	}
 	
-	protected static String extractFile(String s) {
-		int p = s.lastIndexOf(File.separatorChar);
-		if (p < 0) {
-			return s;
+	/**
+	 * 
+	 * @param string
+	 * @return
+	 */
+	protected static String extractFile(String string) {
+		int lastIndex = string.lastIndexOf(File.separatorChar);
+		if (lastIndex < 0) {
+			return string;
+		} else {
+			return string.substring(lastIndex + 1);
 		}
-		
-		return s.substring(p + 1);
 	}
 	
+	/**
+	 * 
+	 * @param result
+	 * @param path
+	 * @param srcPath
+	 * @param srcMask
+	 * @param destPath
+	 * @param destMask
+	 */
 	protected static void processDirectory(List<String> result, File path, String srcPath, String srcMask, String destPath, String destMask) {
-		if (path.exists() == false || path.isDirectory() == false)
+		if (path.exists() == false || path.isDirectory() == false) {
 			return;
-		if (JavaHelper.isDebugEnabled()) {
-			System.out.printf("newerthan:debug: process %s\n", path);
 		}
-		File[] lsf = path.listFiles(new SmartFileFilter(srcMask, srcPath, destPath, destMask));
-		for (File f : lsf)
-			result.add(f.getAbsolutePath());
-		lsf = path.listFiles(new FileFilter() {
-			public boolean accept(File pathname) {
-				return pathname.isDirectory();
-			}
-		});
 		
-		for (File f : lsf) {
-			processDirectory(result, f, srcPath, srcMask, destPath, destMask);
+		BeeHelper.debug("newerthan:debug: process %s\n", path);
+		File[] listFiles = path.listFiles(new SmartFileFilter(srcMask, srcPath, destPath, destMask));
+		for (File file : listFiles) {
+			result.add(file.getAbsolutePath());
+		}
+		listFiles = path.listFiles(new FolderFilter());
+		for (File file : listFiles) {
+			processDirectory(result, file, srcPath, srcMask, destPath, destMask);
 		}
 	}
 	
 	protected static class SmartFileFilter implements FileFilter {
 		Pattern p;
-		
 		int ml, sl;
 		
 		String srcPath, destPath, destMask;
-		
 		String srcMask;
-		
 		List<String> result;
 		
 		SmartFileFilter(/* List <String> result, */String mask, String srcPath, String destPath, String destMask) {
@@ -118,34 +137,41 @@ public class newerthan {
 			this.destMask = destMask;
 			
 			sl = srcPath.length();
-			if (sl > 0 && (srcPath.charAt(sl - 1) == '\\' || srcPath.charAt(sl - 1) == '/'))
+			if (sl > 0 && (srcPath.charAt(sl - 1) == '\\' || srcPath.charAt(sl - 1) == '/')) {
 				sl--; // for sep
+			}
 		}
 		
+		/**
+		 * 
+		 * @param pathname
+		 * @return
+		 * @see java.io.FileFilter#accept(java.io.File)
+		 */
 		public boolean accept(File pathname) {
-			if (pathname.isDirectory())
-				return false; // processDirectory(result, pathname, srcPath,
+			if (pathname.isDirectory()) {
+				return false;
+				// processDirectory(result, pathname, srcPath,
+			}
+			
 			// srcMask, destPath, destMask);
 			// TODO: path name can be one .java file which generates multiple
 			// .class
 			// files, so every of them should count (consider only top level,
 			// not nested classes
 			String n = pathname.getName();
-			if (JavaHelper.isDebugEnabled()) {
-				System.out.printf("newerthan:Path to accept %s, current parent len %d, mask len %d\n", n, sl, ml);
-			}
+			BeeHelper.debug("newerthan:Path to accept %s, current parent len %d, mask len %d\n", n, sl, ml);
 			if (p.matcher(n).matches()) {
 				n = n.substring(0, n.length() - ml);
 				String parent = pathname.getParent();
-				if (JavaHelper.isDebugEnabled()) {
-					System.out.printf("newerthan:Parent %s, src %s\n", parent, srcPath);
-				}
+				BeeHelper.debug("newerthan:Parent %s, src %s\n", parent, srcPath);
 				assert parent.indexOf(srcPath) == 0;
 				parent = parent.substring(sl);
 				File destFile = new File(destPath + parent, n + destMask);
 				// System.out.println("DF"+destFile);
-				if (destFile.exists() == false)
+				if (destFile.exists() == false) {
 					return true;
+				}
 				return pathname.lastModified() > destFile.lastModified();
 			}
 			return false;

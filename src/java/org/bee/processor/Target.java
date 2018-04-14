@@ -57,6 +57,7 @@ public class Target extends Expression {
 	
 	// TODO: add a base method something like fillAttributes
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		logger.finest("Target: startElement(" + uri + ", " + localName + ", " + qName + ", " + attributes + ")");
 		super.startElement(uri, localName, qName, attributes);
 		dir = attributes.getValue("", ATTR_DIR);
 		comment = attributes.getValue("", ATTR_COMMENT);

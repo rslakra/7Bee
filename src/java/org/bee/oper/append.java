@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.bee.util.InfoHolder;
 
+import jdepend.framework.BeeHelper;
+
 /**
  * @author <a href="Dmitriy@mochamail.com">Dmitriy Rogatkin</a>
  *
@@ -32,35 +34,54 @@ public class append {
 	 *         separator?
 	 *         Maybe next argument?
 	 */
-	public static InfoHolder<String, String, Object> doOperator(InfoHolder<String, String, Object> op1, InfoHolder<String, String, Object> op2) {
-		if (op1 == null || op1.getValue() == null || op1.getValue().length() == 0)
-			return op2;
-		Object type = op1.getType();
+	public static InfoHolder<String, String, Object> doOperator(InfoHolder<String, String, Object> operation, InfoHolder<String, String, Object> another) {
+		BeeHelper.debug("append: doOperator(%s, %s)", operation, another);
+		if (operation == null || operation.getValue() == null || operation.getValue().length() == 0) {
+			return another;
+		}
+		
+		Object type = operation.getType();
 		Object valOp1 = null;
 		if (type instanceof Object[]) {
-			valOp1 = ((Object[]) type).length == 1 ? ((Object[]) type)[0] : op1.getValue();
+			valOp1 = ((Object[]) type).length == 1 ? ((Object[]) type)[0] : operation.getValue();
 		} else if (type instanceof List) {
-			valOp1 = ((List) type).size() == 1 ? ((List) type).get(0) : op1.getValue();
-		} else
-			valOp1 = op1.getValue();
-		if (valOp1 == null)
+			valOp1 = ((List<?>) type).size() == 1 ? ((List<?>) type).get(0) : operation.getValue();
+		} else {
+			valOp1 = operation.getValue();
+		}
+		
+		if (valOp1 == null) {
 			valOp1 = "";
-		if (op2 == null || op2.getValue() == null)
-			return new InfoHolder<String, String, Object>(op1.getKey(), valOp1.toString(), valOp1);
+		}
+		
+		if (another == null || another.getValue() == null) {
+			return new InfoHolder<String, String, Object>(operation.getKey(), valOp1.toString(), valOp1);
+		}
+		
 		Object valOp2 = null;
-		Object op2Type = op2.getType();
+		Object op2Type = another.getType();
 		if (op2Type instanceof Object[]) {
-			valOp2 = ((Object[]) op2Type).length == 1 ? ((Object[]) op2Type)[0] : op2.getValue();
+			valOp2 = ((Object[]) op2Type).length == 1 ? ((Object[]) op2Type)[0] : another.getValue();
 		} else if (op2Type instanceof List) {
-			valOp2 = ((List) op2Type).size() == 1 ? ((List) op2Type).get(0) : op2.getValue();
-		} else
-			valOp2 = op2.getValue();
-		if (valOp2 == null)
+			valOp2 = ((List<?>) op2Type).size() == 1 ? ((List<?>) op2Type).get(0) : another.getValue();
+		} else {
+			valOp2 = another.getValue();
+		}
+		
+		if (valOp2 == null) {
 			valOp2 = "";
-		return new InfoHolder<String, String, Object>(op1.getKey(), valOp1.toString() + valOp2.toString());
+		}
+		
+		return new InfoHolder<String, String, Object>(operation.getKey(), valOp1.toString() + valOp2.toString());
 	}
 	
-	public static InfoHolder<String, String, Object> proceed(InfoHolder<String, String, Object> op1, InfoHolder<String, String, Object> op2) {
-		return doOperator(op1, op2);
+	/**
+	 * 
+	 * @param op1
+	 * @param op2
+	 * @return
+	 */
+	public static InfoHolder<String, String, Object> proceed(InfoHolder<String, String, Object> operation, InfoHolder<String, String, Object> another) {
+		return doOperator(operation, another);
 	}
 }

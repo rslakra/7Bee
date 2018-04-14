@@ -53,7 +53,7 @@ import java.util.logging.SimpleFormatter;
  * @version 1.0.0
  * @since 1.0.0
  */
-public final class JavaHelper {
+public final class BeeHelper {
 	
 	/** UTF-8 */
 	public static String UTF_8 = "UTF-8";
@@ -84,7 +84,7 @@ public final class JavaHelper {
 	private static Logger mRootLogger;
 	
 	/** singleton instance. */
-	private JavaHelper() {
+	private BeeHelper() {
 		throw new RuntimeException("Object creation is not allowed for this object!");
 	}
 	
@@ -723,7 +723,7 @@ public final class JavaHelper {
 	 *
 	 * @return Log level of the root logger
 	 */
-	private static final Level getLogLevel() {
+	public static final Level getLogLevel() {
 		return getRootLogger().getLevel();
 	}
 	
@@ -765,12 +765,12 @@ public final class JavaHelper {
 	}
 	
 	/**
-	 * Returns the value of the <code>sDebugEnabled</code> property.
+	 * Returns true if debug is enabled otherwise false.
 	 * 
 	 * @return
 	 */
 	public static final boolean isDebugEnabled() {
-		return isLogEnabledFor(Level.ALL);
+		return false;
 	}
 	
 	/**
@@ -851,6 +851,7 @@ public final class JavaHelper {
 	public static final void debug(String format, Object... args) {
 		if (isDebugEnabled()) {
 			System.out.printf(format, args);
+			System.out.println();
 		}
 	}
 	
@@ -881,10 +882,10 @@ public final class JavaHelper {
 	 */
 	public static void main(String[] args) {
 		System.out.println("-- main method starts --");
-		JavaHelper.setLogLevel(Level.ALL);
-		JavaHelper.info("This is info level log.");
-		JavaHelper.warn("This is warn level log.");
-		JavaHelper.error(new IOException("Testing IO Exception."));
+		BeeHelper.setLogLevel(Level.ALL);
+		BeeHelper.info("This is info level log.");
+		BeeHelper.warn("This is warn level log.");
+		BeeHelper.error(new IOException("Testing IO Exception."));
 	}
 	
 }

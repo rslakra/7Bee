@@ -10,9 +10,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.bee.util.FolderFilter;
+
+import jdepend.framework.BeeHelper;
 import jdepend.framework.ClassFileParser;
 import jdepend.framework.JavaClass;
-import jdepend.framework.JavaHelper;
 
 /**
  * @author <a href="dmitriy@mochamail.com">Dmitriy Rogatkin</a>
@@ -34,8 +36,7 @@ public class newerwithdependency extends newerthan {
 	}
 	
 	public static List eval(String srcPath, String dstPath, String defClass, String pkgPrefPath) {
-		if (JavaHelper.isDebugEnabled())
-			System.out.printf("newerwithdependency:parameters %s -> %s\n", srcPath, dstPath);
+		BeeHelper.debug("newerwithdependency:parameters %s -> %s\n", srcPath, dstPath);
 		List<String> result = newerthan.eval(srcPath, dstPath);
 		// make it map for fast check
 		String srcExt = extractExt(srcPath);
@@ -45,19 +46,22 @@ public class newerwithdependency extends newerthan {
 		// make it absolute since
 		srcPath = new File(srcPath).getAbsolutePath();
 		if (result.size() == 0) {
-			if (defClass != null && defClass.length() > 0)
+			if (defClass != null && defClass.length() > 0) {
 				// TODO: do conversion in file name if in form a class
 				result.add(new File(srcPath, defClass.replace('.', File.separatorChar) + srcExt).getAbsolutePath());
+			}
 			return result;
 		}
+		
 		Map<String, String> srcClasses = new HashMap<String, String>(result.size());
-		if (JavaHelper.isDebugEnabled())
-			System.out.println("newerwithdependency:src path:" + srcPath);
+		BeeHelper.debug("newerwithdependency:src path:" + srcPath);
 		if (pkgPrefPath != null && pkgPrefPath.length() > 0) {
 			pkgPrefPath = pkgPrefPath.replace(File.separatorChar, '/');
 			// pkgPrefPath = pkgPrefPath.replace('.', '/');
-			if (pkgPrefPath.charAt(pkgPrefPath.length() - 1) != '/')
+			if (pkgPrefPath.charAt(pkgPrefPath.length() - 1) != '/') {
 				pkgPrefPath += '/';
+			}
+			
 			srcPath = srcPath.substring(0, srcPath.length() - pkgPrefPath.length());
 			// cl-=pkgPrefPath.length();
 		}
@@ -68,8 +72,7 @@ public class newerwithdependency extends newerthan {
 		}
 		// traverse all files
 		dstPath = extractPath(normalize(dstPath));
-		if (JavaHelper.isDebugEnabled())
-			System.out.println("newerwithdependency:looking for:" + srcClasses);
+		BeeHelper.debug("newerwithdependency:looking for:" + srcClasses);
 		processDirectory(result, new File(dstPath), srcPath, srcClasses, srcExt, dstExt);
 		// if a class has dependencies in the map, add to result
 		// note no check for newly added dependent files since they are unchaged
@@ -78,68 +81,66 @@ public class newerwithdependency extends newerthan {
 	
 	protected static String extractExt(String s) {
 		int p = s.lastIndexOf('.');
-		if (p < 0)
+		if (p < 0) {
 			return "";
+		}
+		
 		return s.substring(p);
 	}
 	
 	protected static void processDirectory(List<String> result, File classPath, String srcPath, Map<String, String> dependencies, final String srcExt, final String dstExt) {
-		if (classPath.exists() == false || classPath.isDirectory() == false)
+		if (classPath.exists() == false || classPath.isDirectory() == false) {
 			return;
-		File[] lsf = classPath.listFiles(new FileFilter() {
+		}
+		
+		File[] listFiles = classPath.listFiles(new FileFilter() {
 			public boolean accept(File pathname) {
 				return pathname.getName().endsWith(dstExt);
 			}
 		});
-		ClassFileParser classParser = new ClassFileParser(); // should be
-																// global?
-		for (File f : lsf) {
+		// should be global?
+		ClassFileParser classParser = new ClassFileParser();
+		for (File file : listFiles) {
 			JavaClass javaClass = null;
 			try {
-				javaClass = classParser.parse(f);
+				javaClass = classParser.parse(file);
 			} catch (IOException ioe) {
-				System.err.printf("newerwithdependency: %s was skipped due %s\n", f.toString(), ioe.toString());
+				System.err.printf("newerwithdependency: %s was skipped due %s\n", file.toString(), ioe.toString());
 				continue;
 			}
 			
 			List<String> currentDepends = classParser.getDependencies();
-			for (String dependName : currentDepends)
+			for (String dependName : currentDepends) {
 				if (dependencies.get(dependName) != null) {
-					if (JavaHelper.isDebugEnabled()) {
-						System.out.printf("newerwithdependency: found %s dependent on %s\n", f.toString(), dependName);
-					}
-					
+					BeeHelper.debug("newerwithdependency: found %s dependent on %s\n", file.toString(), dependName);
 					String className = javaClass.getName();
 					int nested = className.indexOf('$');
-					if (nested > 0)
+					if (nested > 0) {
 						className = className.substring(0, nested);
-					else {
+					} else {
 						nested = className.indexOf('+');
-						if (nested > 0)
+						if (nested > 0) {
 							className = className.substring(0, nested);
+						}
 					}
 					nested = className.lastIndexOf('.');
 					String packagePath = nested > 0 ? className.substring(0, nested + 1).replace('.', File.separatorChar) : "";
 					// TODO: this is low efficient way to find duplication, so
 					// it can be reconsidered using map of already inserted
-					String srcFile = new File(srcPath, packagePath + javaClass.getSourceFile()
-					/* className.replace('.', File.separatorChar) + srcExt */
-					).getAbsolutePath();
+					String srcFile = new File(srcPath, packagePath + javaClass.getSourceFile()).getAbsolutePath();
 					// TODO: check if the file exists, since file can be moved
-					if (result.contains(srcFile) == false && new File(srcFile).exists())
+					if (result.contains(srcFile) == false && new File(srcFile).exists()) {
 						result.add(srcFile);
+					}
 					break;
 				}
+			}
 		}
 		
 		// can be joint in one step
-		lsf = classPath.listFiles(new FileFilter() {
-			public boolean accept(File pathname) {
-				return pathname.isDirectory();
-			}
-		});
-		for (File f : lsf) {
-			processDirectory(result, f, srcPath, dependencies, srcExt, dstExt);
+		listFiles = classPath.listFiles(new FolderFilter());
+		for (File file : listFiles) {
+			processDirectory(result, file, srcPath, dependencies, srcExt, dstExt);
 		}
 	}
 	

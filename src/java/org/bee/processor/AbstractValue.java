@@ -89,9 +89,9 @@ public abstract class AbstractValue extends DefaultHandler implements Instructio
 		InfoHolder<String, InfoHolder, Object> result = null;
 		Instruction instruction = this;
 		while (result == null && instruction != null) {
-			NameSpace ns = instruction.getNameSpace();
-			if (ns != null) {
-				result = ns.lookup(lookName);
+			NameSpace nameSpace = instruction.getNameSpace();
+			if (nameSpace != null) {
+				result = nameSpace.lookup(lookName);
 			}
 			
 			instruction = instruction.getParent();
@@ -163,93 +163,165 @@ public abstract class AbstractValue extends DefaultHandler implements Instructio
 		return v1 == null ? null : v1.getValue();
 	}
 	
+	/**
+	 * 
+	 * @param uri
+	 * @param localName
+	 * @param qName
+	 * @param attributes
+	 * @throws SAXException
+	 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String,
+	 *      java.lang.String, java.lang.String, org.xml.sax.Attributes)
+	 */
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		logger.finest("AbstractValue: startElement(" + uri + ", " + localName + ", " + qName + ", " + attributes + ")");
 		verifyAttributes(attributes);
 		valueBuffer = new StringBuffer(20);
 		variable = attributes.getValue("", ATTR_VARIABLE);
 		value = attributes.getValue("", ATTR_VALUE);
-		if (value == null && attributes.getValue("", ATTR_PROPERTY) != null)
+		if (value == null && attributes.getValue("", ATTR_PROPERTY) != null) {
 			value = System.getProperty(attributes.getValue("", ATTR_PROPERTY));
+		}
+		
 		name = attributes.getValue("", ATTR_NAME);
-		if (type != null)
+		if (type != null) {
 			return;
-		String strType = attributes.getValue("", ATTR_TYPE);
-		if (strType == null)
+		}
+		
+		String attrType = attributes.getValue("", ATTR_TYPE);
+		logger.finest("attrType:" + attrType);
+		if (attrType == null) {
 			type = Type.variable;
-		else {
-			strType = extendShortcut(strType);
-			if (TYPE_RESERVED.indexOf(strType) < 0) {
+		} else {
+			attrType = extendShortcut(attrType);
+			if (TYPE_RESERVED.indexOf(attrType) < 0) {
 				try {
-					type = Type.valueOf(strType);
+					type = Type.valueOf(attrType);
 				} catch (IllegalArgumentException iae) {
-					logger.warning(String.format("Unrecognized type value of '%s' ignored for element %s (%s)", strType, name, iae));
+					logger.warning(String.format("Unrecognized type value of '%s' ignored for element %s (%s)", attrType, name, iae));
 					type = Type.variable;
 				}
-			} else
+			} else {
 				type = Type.variable;
-		}
-	}
-	
-	private static String extendShortcut(String strType) {
-		int vi = TYPE_SHORTCUTS.indexOf(strType);
-		if (vi < 0)
-			return strType;
-		int ei = TYPE_SHORTCUTS.indexOf('|', vi);
-		if (ei > 0)
-			return TYPE_SHORTCUTS.substring(vi, ei);
-		return TYPE_SHORTCUTS.substring(vi);
-	}
-	
-	public void endElement(String uri, String localName, String qName) throws SAXException {
-		if (valueBuffer.length() > 0 && value == null)
-			value = valueBuffer.toString();
-		valueBuffer = null;
-	}
-	
-	public void characters(char[] ch, int start, int length) throws SAXException {
-		valueBuffer.append(ch, start, length);
-	}
-	
-	public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
-		characters(ch, start, length);
-	}
-	
-	public void setDocumentLocator(Locator locator) {
-		// if (logger.isLoggable(Level.WARNING))
-		this.locator = locator;
-	}
-	
-	protected void verifyAttributes(Attributes attrs) {
-		if (logger.isLoggable(Level.WARNING)) {
-			String[] aas = getAllowedAttributeNames();
-			if (aas != null && attrs.getLength() > 0) {
-				Map<String, String> aam = new HashMap<String, String>(aas.length);
-				for (String an : aas)
-					aam.put(an, an);
-				for (int i = 0; i < attrs.getLength(); i++)
-					if (aam.get(attrs.getQName(i)) == null)
-						logger.warning("Not allowed attribute '" + attrs.getQName(i) + "' for " + getClass().getName() + " at " + locator);
 			}
 		}
 	}
 	
+	/**
+	 * 
+	 * @param strType
+	 * @return
+	 */
+	private static String extendShortcut(String strType) {
+		int vi = TYPE_SHORTCUTS.indexOf(strType);
+		if (vi < 0) {
+			return strType;
+		}
+		
+		int ei = TYPE_SHORTCUTS.indexOf('|', vi);
+		if (ei > 0) {
+			return TYPE_SHORTCUTS.substring(vi, ei);
+		}
+		
+		return TYPE_SHORTCUTS.substring(vi);
+	}
+	
+	/**
+	 * 
+	 * @param uri
+	 * @param localName
+	 * @param qName
+	 * @throws SAXException
+	 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String,
+	 *      java.lang.String, java.lang.String)
+	 */
+	public void endElement(String uri, String localName, String qName) throws SAXException {
+		if (valueBuffer.length() > 0 && value == null) {
+			value = valueBuffer.toString();
+		}
+		
+		valueBuffer = null;
+	}
+	
+	/**
+	 * 
+	 * @param ch
+	 * @param start
+	 * @param length
+	 * @throws SAXException
+	 * @see org.xml.sax.helpers.DefaultHandler#characters(char[], int, int)
+	 */
+	public void characters(char[] ch, int start, int length) throws SAXException {
+		valueBuffer.append(ch, start, length);
+	}
+	
+	/**
+	 * 
+	 * @param ch
+	 * @param start
+	 * @param length
+	 * @throws SAXException
+	 * @see org.xml.sax.helpers.DefaultHandler#ignorableWhitespace(char[], int,
+	 *      int)
+	 */
+	public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+		characters(ch, start, length);
+	}
+	
+	/**
+	 * 
+	 * @param locator
+	 * @see org.xml.sax.helpers.DefaultHandler#setDocumentLocator(org.xml.sax.Locator)
+	 */
+	public void setDocumentLocator(Locator locator) {
+		this.locator = locator;
+	}
+	
+	/**
+	 * 
+	 * @param attrs
+	 */
+	protected void verifyAttributes(Attributes attrs) {
+		if (logger.isLoggable(Level.WARNING)) {
+			String[] allowedAttributes = getAllowedAttributeNames();
+			if (allowedAttributes != null && attrs.getLength() > 0) {
+				Map<String, String> aam = new HashMap<String, String>(allowedAttributes.length);
+				for (String attrName : allowedAttributes) {
+					aam.put(attrName, attrName);
+				}
+				
+				for (int i = 0; i < attrs.getLength(); i++) {
+					if (aam.get(attrs.getQName(i)) == null) {
+						logger.warning("Not allowed attribute '" + attrs.getQName(i) + "' for " + getClass().getName() + " at " + locator);
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 * @param pathName
+	 * @return
+	 */
 	protected File makeFile(String pathName) {
 		char fc = pathName.charAt(0);
-		if (fc == '/' || fc == '\\' || value.indexOf(':') > 0) // absolute path
-																// criteria
+		// absolute path criteria
+		if (fc == '/' || fc == '\\' || value.indexOf(':') > 0) {
 			return new File(pathName);
-		else if (pathName.startsWith("./") || pathName.startsWith(".\\") || pathName.startsWith("../") || pathName.startsWith("..\\"))
+		} else if (pathName.startsWith("./") || pathName.startsWith(".\\") || pathName.startsWith("../") || pathName.startsWith("..\\")) {
 			try {
 				return new File(pathName).getCanonicalFile();
 			} catch (IOException ioe) {
 				logger.warning("Path '" + pathName + "' cannot be found, " + ioe);
 				return new File(pathName).getAbsoluteFile();
 			}
-		else {
+		} else {
 			String baseDir = lookupStringValue(RESERVE_NAME_DIR);
-			if (baseDir == null)
-				baseDir = System.getProperty("user.dir");// new
-															// File(".").getAbsolutePath();
+			if (baseDir == null) {
+				baseDir = System.getProperty("user.dir");
+			}
+			
 			return new File(baseDir, pathName); // TODO ?? .getAbsolutePath();
 		}
 	}

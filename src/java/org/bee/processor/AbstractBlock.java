@@ -3,6 +3,8 @@
 // Created on Mar 18, 2004
 package org.bee.processor;
 
+import static org.bee.util.Logger.logger;
+
 import java.util.Iterator;
 
 import org.bee.util.InfoHolder;
@@ -47,6 +49,9 @@ public abstract class AbstractBlock extends AbstractValue {
 		return nameSpace;
 	}
 	
+	/**
+	 * 
+	 */
 	protected void clearNameSpace() {
 		// TODO: possible clean name space???
 		// for(InfoHolder < String, InfoHolder, Object >
@@ -71,6 +76,7 @@ public abstract class AbstractBlock extends AbstractValue {
 	 *      java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		logger.finest("AbstractBlock: startElement(" + uri + ", " + localName + ", " + qName + ", " + attributes + ")");
 		super.startElement(uri, localName, qName, attributes);
 		if (name == null) {
 			name = attributes.getValue("", ATTR_VARIABLE);

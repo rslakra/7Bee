@@ -33,9 +33,16 @@ public class cropname {
 		return eval(param1, param2, replaceTo, null);
 	}
 	
+	/**
+	 * 
+	 * @param param1
+	 * @param param2
+	 * @param replaceTo
+	 * @param all
+	 * @return
+	 */
 	public static List<String> eval(String param1, String param2, final String replaceTo, final String all) {
-		final String mask = // wildCardToRegExpr(param2);
-						param2.replaceAll("\\?", "[^/\\]").replaceAll("\\*", "[^/\\]*");
+		final String mask = param2.replaceAll("\\?", "[^/\\]").replaceAll("\\*", "[^/\\]*");
 		final List<String> result = new ArrayList<String>();
 		if (param1.indexOf('*') < 0 && param1.indexOf('?') < 0 || param1.indexOf('\n') >= 0) {
 			if (all == null) {

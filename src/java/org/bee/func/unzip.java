@@ -31,11 +31,15 @@ public class unzip {
 	 * @return
 	 */
 	public static boolean eval(Object... args) {
-		if (args.length == 0)
+		if (args.length == 0) {
 			return false;
+		}
+		
 		File srcFile = new File(args[0].toString());
-		if (srcFile.exists() == false || srcFile.isFile() == false)
+		if (srcFile.exists() == false || srcFile.isFile() == false) {
 			return false;
+		}
+		
 		File targetLoc = args.length > 1 ? new File(args[1].toString()) : new File(System.getProperty("user.dir"));
 		try {
 			ZipFile zipFile = new ZipFile(srcFile);
@@ -45,8 +49,8 @@ public class unzip {
 					// TODO for wild car entries, utilize complete set, but add
 					// check for match for every entry
 					if (args[i] instanceof Collection) {
-						ArrayList entries = new ArrayList();
-						entries.addAll((Collection) args[i]);
+						ArrayList<Object> entries = new ArrayList<Object>();
+						entries.addAll((Collection<?>) args[i]);
 						extractEntries(zipFile, targetLoc, entries.toArray());
 					} else if (args[i] instanceof Object[]) {
 						extractEntries(zipFile, targetLoc, (Object[]) args[i]);
@@ -70,6 +74,13 @@ public class unzip {
 		return false;
 	}
 	
+	/**
+	 * 
+	 * @param zipFile
+	 * @param destDir
+	 * @param entries
+	 * @throws IOException
+	 */
 	private static void extractEntries(ZipFile zipFile, File destDir, Object[] entries) throws IOException {
 		for (int e = 0; e < entries.length; e++) {
 			String name = entries[e].toString();
@@ -83,6 +94,13 @@ public class unzip {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param zipFile
+	 * @param targetLoc
+	 * @param zipEntry
+	 * @throws IOException
+	 */
 	private static void extractEntry(ZipFile zipFile, File targetLoc, ZipEntry zipEntry) throws IOException {
 		String name = zipEntry.getName();
 		// name = new String(name.getBytes(Charset.forName("ASCII")), "UTF-8");

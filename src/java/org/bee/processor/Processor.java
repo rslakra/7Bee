@@ -105,6 +105,7 @@ public final class Processor {
 		 *      java.lang.String, java.lang.String, org.xml.sax.Attributes)
 		 */
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+			logger.finest("Processor: startElement(" + uri + ", " + localName + ", " + qName + ", " + attributes + ")");
 			path.push(qName);
 			XmlPath workPath = path;
 			Instruction instruction = null;
@@ -159,7 +160,6 @@ public final class Processor {
 		public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
 			characters(ch, start, length);
 		}
-		
 	}
 	
 }

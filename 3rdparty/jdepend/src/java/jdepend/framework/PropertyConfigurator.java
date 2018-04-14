@@ -63,19 +63,17 @@ public class PropertyConfigurator {
 	 * 
 	 * @return Filtered package names.
 	 */
-	public Collection getFilteredPackages() {
-		
-		Collection packages = new ArrayList();
-		
-		Enumeration e = properties.propertyNames();
-		while (e.hasMoreElements()) {
-			String key = (String) e.nextElement();
+	public Collection<String> getFilteredPackages() {
+		Collection<String> packages = new ArrayList<String>();
+		Enumeration<?> enumPropNames = properties.propertyNames();
+		while (enumPropNames.hasMoreElements()) {
+			String key = (String) enumPropNames.nextElement();
 			if (key.startsWith("ignore")) {
 				String path = properties.getProperty(key);
 				System.out.println(this.getClass().toString() + ": read " + key + "=" + path);
-				StringTokenizer st = new StringTokenizer(path, ",");
-				while (st.hasMoreTokens()) {
-					String name = (String) st.nextToken();
+				StringTokenizer stringTokenizer = new StringTokenizer(path, ",");
+				while (stringTokenizer.hasMoreTokens()) {
+					String name = (String) stringTokenizer.nextToken();
 					name = name.trim();
 					packages.add(name);
 				}
@@ -85,16 +83,19 @@ public class PropertyConfigurator {
 		return packages;
 	}
 	
-	public Collection getConfiguredPackages() {
-		
-		Collection packages = new ArrayList();
-		
-		Enumeration e = properties.propertyNames();
-		while (e.hasMoreElements()) {
-			String key = (String) e.nextElement();
+	/**
+	 * Returns the <code>Collection<JavaPackage></code>.
+	 * 
+	 * @return
+	 */
+	public Collection<JavaPackage> getConfiguredPackages() {
+		Collection<JavaPackage> packages = new ArrayList<JavaPackage>();
+		Enumeration<?> enumPropNames = properties.propertyNames();
+		while (enumPropNames.hasMoreElements()) {
+			String key = (String) enumPropNames.nextElement();
 			if (!key.startsWith("ignore") && (!key.equals("analyzeInnerClasses"))) {
-				String v = properties.getProperty(key);
-				packages.add(new JavaPackage(key, new Integer(v).intValue()));
+				String value = properties.getProperty(key);
+				packages.add(new JavaPackage(key, new Integer(value).intValue()));
 			}
 		}
 		
@@ -102,7 +103,6 @@ public class PropertyConfigurator {
 	}
 	
 	public boolean getAnalyzeInnerClasses() {
-		
 		String key = "analyzeInnerClasses";
 		if (properties.containsKey(key)) {
 			String value = properties.getProperty(key);
@@ -123,34 +123,30 @@ public class PropertyConfigurator {
 	}
 	
 	/**
+	 * Loads the properties file.
 	 * 
 	 * @param file
 	 * @return
 	 */
-	public static Properties loadProperties(File file) {
-		Properties p = new Properties();
-		InputStream is = null;
+	public static Properties loadProperties(final File file) {
+		Properties jDependProperties = new Properties();
+		InputStream inputStream = null;
 		try {
-			is = new FileInputStream(file);
-		} catch (Exception e) {
-			is = PropertyConfigurator.class.getResourceAsStream("/" + DEFAULT_PROPERTY_FILE);
-		}
-		
-		try {
-			if (is != null) {
-				p.load(is);
+			try {
+				inputStream = new FileInputStream(file);
+			} catch (Exception e) {
+				inputStream = PropertyConfigurator.class.getResourceAsStream("/" + DEFAULT_PROPERTY_FILE);
 			}
-		} catch (IOException ignore) {
+			
+			if (inputStream != null) {
+				jDependProperties.load(inputStream);
+			}
+		} catch (IOException ex) {
 			// ignore me!
 		} finally {
-			try {
-				if (is != null) {
-					is.close();
-				}
-			} catch (IOException ignore) {
-			}
+			BeeHelper.closeSilently(inputStream);
 		}
 		
-		return p;
+		return jDependProperties;
 	}
 }

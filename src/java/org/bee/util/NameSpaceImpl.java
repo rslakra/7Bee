@@ -14,31 +14,52 @@ import org.bee.processor.Instruction;
  *
  *         Provide class description here
  */
-public class NameSpaceImpl implements Instruction.NameSpace {
-	Map<String, InfoHolder<String, InfoHolder, Object>> nameSpace;
+public final class NameSpaceImpl implements Instruction.NameSpace {
+	Map<String, InfoHolder<String, InfoHolder, Object>> nameSpaces;
 	
 	public NameSpaceImpl() {
-		nameSpace = new HashMap<String, InfoHolder<String, InfoHolder, Object>>();
+		nameSpaces = new HashMap<String, InfoHolder<String, InfoHolder, Object>>();
 	}
 	
+	/**
+	 * 
+	 * @return
+	 * @see org.bee.processor.Instruction.NameSpace#iterator()
+	 */
 	public Iterator<InfoHolder<String, InfoHolder, Object>> iterator() {
-		return nameSpace.values().iterator();
+		return nameSpaces.values().iterator();
 	}
 	
-	public void inScope(InfoHolder<String, InfoHolder, Object> var) {
-		InfoHolder<String, InfoHolder, Object> oldVar = nameSpace.get(var.getKey());
-		if (oldVar == null)
-			nameSpace.put(var.getKey(), var);
-		else {
-			nameSpace.put(var.getKey(), var);
+	/**
+	 * 
+	 * @param var
+	 * @see org.bee.processor.Instruction.NameSpace#inScope(org.bee.util.InfoHolder)
+	 */
+	public void inScope(InfoHolder<String, InfoHolder, Object> value) {
+		InfoHolder<String, InfoHolder, Object> oldValue = nameSpaces.get(value.getKey());
+		if (oldValue == null) {
+			nameSpaces.put(value.getKey(), value);
+		} else {
+			nameSpaces.put(value.getKey(), value);
 		}
 	}
 	
-	public void outScope(InfoHolder<String, InfoHolder, Object> var) {
-		nameSpace.remove(var.getKey());
+	/**
+	 * 
+	 * @param value
+	 * @see org.bee.processor.Instruction.NameSpace#outScope(org.bee.util.InfoHolder)
+	 */
+	public void outScope(InfoHolder<String, InfoHolder, Object> value) {
+		nameSpaces.remove(value.getKey());
 	}
 	
+	/**
+	 * 
+	 * @param name
+	 * @return
+	 * @see org.bee.processor.Instruction.NameSpace#lookup(java.lang.String)
+	 */
 	public InfoHolder<String, InfoHolder, Object> lookup(String name) {
-		return nameSpace.get(name);
+		return nameSpaces.get(name);
 	}
 }

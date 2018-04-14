@@ -31,37 +31,47 @@ public class Dependency extends Parameter {
 				logger.severe("Target '" + target + "' to depend on was not found.");
 				return null;
 			}
+			
 			InfoHolder<String, Target, Object> tv = th.getValue();
 			if (tv.getValue() instanceof Target == false
 			/* && tv.getType() instanceof Target == false */) {
 				logger.finer("Target: " + target + " found as: " + tv + " and considered as already processed, skipped.");
 				// TODO: can be reconsidered in case of cyclic dependencies
 				result = tv;
-			} else
+			} else {
 				result = tv.getValue().eval();
-			if (processOnly)
+			}
+			if (processOnly) {
 				return new InfoHolder<String, String, Boolean>((String) result.getKey(), Boolean.FALSE.toString(), Boolean.FALSE);
-			else
+			}
+			else {
 				return result;
+			}
 		}
 		result = super.eval();
 		if (result == null) {
 			logger.finest("Can't evaluate, result: null");
 			return null;
 		}
-		if (name != null)
+		
+		if (name != null) {
 			getParent().getNameSpace().inScope(new InfoHolder<String, InfoHolder, Object>(name, result));
+		}
+		
 		Object o = result.getValue();
 		// TODO: replace [] by more robust instanceof List or Object[]
-		if (o == null || Boolean.FALSE.toString().equals(o) || "[]".equals(o))
+		if (o == null || Boolean.FALSE.toString().equals(o) || "[]".equals(o)) {
 			o = Boolean.FALSE;
-		else
+		} else {
 			o = Boolean.TRUE;
+		}
+		
 		logger.finest("Dependency result: " + o);
 		return new InfoHolder<String, String, Object>((String) result.getKey(), o.toString(), o);
 	}
 	
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		logger.finest("Dependency: startElement(" + uri + ", " + localName + ", " + qName + ", " + attributes + ")");
 		super.startElement(uri, localName, qName, attributes);
 		target = attributes.getValue("", ATTR_TARGET);
 		processOnly = "yes".equals(attributes.getValue("", ATTR_PROCESSONLY));

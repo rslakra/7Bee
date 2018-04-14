@@ -68,8 +68,7 @@
 	<target name="Build Date" dir="BEE_HOME">
 		<block>
 			<function name="write">
-				<parameter value="src/java/org/bee/CompileStamp.java"
-					type="file" />
+				<parameter value="src/java/org/bee/CompileStamp.java" type="file" />
 				<parameter>package org.bee;
 					public final class CompileStamp {
 					public static
@@ -168,7 +167,7 @@
 
 	<target name="compile" dir="BEE_HOME">
 		<dependency target="check lib" />
-		<dependency target="Build Date" />
+		<!--dependency target="Build Date" /-->
 		<dependency target="compile_jdepend" />
 		<dependency>
 			<function name="allnewer">

@@ -36,6 +36,9 @@ import java.util.logging.Level;
  */
 public class LoggerConfig extends Properties {
 	
+	/** serialVersionUID */
+	private static final long serialVersionUID = 1L;
+	
 	public LoggerConfig() {
 		setProperty("java.util.logging.FileHandler.pattern", "%h/java%u.log");
 		setProperty("java.util.logging.FileHandler.limit", "50000");
@@ -46,32 +49,45 @@ public class LoggerConfig extends Properties {
 		setProperty("handlers", "java.util.logging.ConsoleHandler");
 	}
 	
-	public void setLogLevel(Level l) {
-		if (l != null) {
-			setProperty(".level", l.toString());
-			setProperty("java.util.logging.ConsoleHandler.level", l.toString());
-		} else
+	/**
+	 * 
+	 * @param logLevel
+	 */
+	public void setLogLevel(Level logLevel) {
+		if (logLevel != null) {
+			setProperty(".level", logLevel.toString());
+			setProperty("java.util.logging.ConsoleHandler.level", logLevel.toString());
+		} else {
 			remove("java.util.logging.ConsoleHandler.formatter");
+		}
 	}
 	
-	public void setLogFile(String name) {
+	/**
+	 * @param logFileName
+	 */
+	public void setLogFile(String logFileName) {
 		// check can write
-		setProperty("java.util.logging.FileHandler.pattern", name);
+		setProperty("java.util.logging.FileHandler.pattern", logFileName);
 		setProperty("handlers", "java.util.logging.ConsoleHandler, java.util.logging.ConsoleHandler");
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
 	public String create() {
-		File result = null;
+		File logFile = null;
 		try {
-			result = File.createTempFile("bee", "logger-config.properties");
-			result.deleteOnExit();
+			logFile = File.createTempFile("bee", "logger-config.properties");
+			logFile.deleteOnExit();
 			FileOutputStream fos;
-			store(fos = new FileOutputStream(result), "bee temporary logger config file");
+			store(fos = new FileOutputStream(logFile), "bee temporary logger config file");
 			fos.close();
-		} catch (IOException ioe) {
-			System.err.printf("LoggerConfig:error: Problem in creation logger config file %s\n", ioe);
+		} catch (IOException ex) {
+			System.err.printf("LoggerConfig:error: Problem in creation logger config file %s\n", ex);
 			return null;
 		}
-		return result.getAbsolutePath();
+		
+		return logFile.getAbsolutePath();
 	}
 }

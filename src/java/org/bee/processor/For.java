@@ -85,8 +85,10 @@ public class For extends AbstractBlock {
 						if (dv != null)
 							dir = dv.getValue();
 					}
-					if (dir == null)
+					if (dir == null) {
 						dir = "."; // TODO: need to look in project dir, then .
+					}
+					
 					s = s.replace("?", "[^/\\\\:]");
 					s = s.replace("*", "[^/\\\\?:*]*");
 					final Pattern p = Pattern.compile(s);
@@ -107,8 +109,9 @@ public class For extends AbstractBlock {
 					break;
 				case variable:
 				default:
-					if (currSep.length() == 0)
+					if (currSep.length() == 0) {
 						return new InfoHolder[] { new InfoHolder<String, String, Object>(s, s) };
+					}
 					return arrayToInfoHolders(s, s.split(currSep));
 			}
 		} else if (clarifier instanceof List) {
@@ -117,8 +120,9 @@ public class For extends AbstractBlock {
 		} else if (clarifier instanceof Object[]) {
 			Object[] ao = (Object[]) clarifier;
 			String[] as = new String[ao.length];
-			for (int i = 0; i < ao.length; i++)
+			for (int i = 0; i < ao.length; i++) {
 				as[i] = ao[i] != null ? ao[i].toString() : null;
+			}
 			return arrayToInfoHolders(s, as);
 		} else if (s != null && s.length() > 0) {
 			return arrayToInfoHolders(variable, s.split(currSep));
@@ -138,24 +142,42 @@ public class For extends AbstractBlock {
 		return result;
 	}
 	
+	/**
+	 * 
+	 * @param dirs
+	 * @param dir
+	 */
 	protected void traverse(final List<String> dirs, File dir) {
 		dir.listFiles(new FileFilter() {
 			public boolean accept(File file) {
-				if (file.isDirectory())
+				if (file.isDirectory()) {
 					dirs.add(file.getPath());
+				}
 				traverse(dirs, file);
 				return false;
 			}
 		});
 	}
 	
+	/**
+	 * 
+	 * @param uri
+	 * @param localName
+	 * @param qName
+	 * @param attributes
+	 * @throws SAXException
+	 * @see org.bee.processor.AbstractBlock#startElement(java.lang.String,
+	 *      java.lang.String, java.lang.String, org.xml.sax.Attributes)
+	 */
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		logger.finest("For: startElement(" + uri + ", " + localName + ", " + qName + ", " + attributes + ")");
 		super.startElement(uri, localName, qName, attributes);
 		variable = attributes.getValue("", ATTR_VARIABLE);
 		inRange = attributes.getValue("", ATTR_IN);
 		separator = attributes.getValue("", ATTR_SEPARATOR);
-		if (separator == null)
+		if (separator == null) {
 			separator = "[ \t\n\\x0B\f\r]";
+		}
 	}
 	
 	public String[] getAllowedAttributeNames() {

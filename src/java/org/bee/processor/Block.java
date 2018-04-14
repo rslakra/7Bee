@@ -58,18 +58,30 @@ public class Block extends AbstractBlock {
 		return result;
 	}
 	
+	/**
+	 * 
+	 * @param uri
+	 * @param localName
+	 * @param qName
+	 * @param attributes
+	 * @throws SAXException
+	 * @see org.bee.processor.AbstractBlock#startElement(java.lang.String,
+	 *      java.lang.String, java.lang.String, org.xml.sax.Attributes)
+	 */
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		logger.finest("Block: startElement(" + uri + ", " + localName + ", " + qName + ", " + attributes + ")");
 		String s = attributes.getValue("", ATTR_TYPE);
-		if ("then".equals(s))
+		if ("then".equals(s)) {
 			blockType = BlockType.t_then;
-		else if ("else".equals(s))
+		} else if ("else".equals(s)) {
 			blockType = BlockType.t_else;
-		else if ("case".equals(s))
+		} else if ("case".equals(s)) {
 			blockType = BlockType.t_case;
-		else if ("default".equals(s))
+		} else if ("default".equals(s)) {
 			blockType = BlockType.t_default;
-		else
+		} else {
 			blockType = BlockType.t_none;
+		}
 		type = Type.block;
 		super.startElement(uri, localName, qName, attributes);
 	}

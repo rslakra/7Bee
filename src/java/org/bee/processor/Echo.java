@@ -3,6 +3,8 @@
 // Created on Mar 10, 2004
 package org.bee.processor;
 
+import static org.bee.util.Logger.logger;
+
 import org.bee.util.InfoHolder;
 import org.bee.util.Misc;
 import org.xml.sax.Attributes;
@@ -48,6 +50,7 @@ public class Echo extends Value {
 	}
 	
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		logger.finest("Echo: startElement(" + uri + ", " + localName + ", " + qName + ", " + attributes + ")");
 		super.startElement(uri, localName, qName, attributes);
 		options = attributes.getValue("", ATTR_OPTIONS);
 	}

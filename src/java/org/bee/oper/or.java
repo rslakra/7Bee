@@ -35,36 +35,61 @@ import org.bee.util.InfoHolder;
  * 
  */
 public class or {
+	/**
+	 * 
+	 * @param op1
+	 * @param op2
+	 * @return
+	 */
 	public static InfoHolder<String, String, Boolean> doOperator(InfoHolder<String, String, Object> op1, InfoHolder<String, String, Object> op2) {
 		Boolean result = toBoolean(op1) || toBoolean(op2);
 		return new InfoHolder<String, String, Boolean>("or", result.toString(), result);
 	}
 	
+	/**
+	 * 
+	 * @param op1
+	 * @param op2
+	 * @return
+	 */
 	public static InfoHolder<String, String, Boolean> proceed(InfoHolder<String, String, Object> op1, InfoHolder<String, String, Object> op2) {
 		return doOperator(op1, op2);
 	}
 	
-	protected static Boolean toBoolean(InfoHolder<String, String, Object> ih) {
-		if (ih == null)
+	/**
+	 * 
+	 * @param infoHolder
+	 * @return
+	 */
+	protected static Boolean toBoolean(InfoHolder<String, String, Object> infoHolder) {
+		if (infoHolder == null) {
 			return Boolean.FALSE;
-		Object o = ih.getType();
-		if (o != null) {
-			if (o instanceof Boolean)
-				return (Boolean) o;
-			else if (o instanceof Object[])
-				return ((Object[]) o).length > 0;
-			else if (o instanceof Collection)
-				return ((Collection) o).size() > 0;
 		}
-		o = ih.getValue();
-		if (o == null)
+		
+		Object type = infoHolder.getType();
+		if (type != null) {
+			if (type instanceof Boolean) {
+				return (Boolean) type;
+			} else if (type instanceof Object[]) {
+				return ((Object[]) type).length > 0;
+			} else if (type instanceof Collection) {
+				return ((Collection<?>) type).size() > 0;
+			}
+		}
+		
+		type = infoHolder.getValue();
+		if (type == null) {
 			return Boolean.FALSE;
-		if (o instanceof Object[])
-			return ((Object[]) o).length > 0;
-		else if (o instanceof Collection)
-			return ((Collection) o).size() > 0;
-		else if (o instanceof Boolean)
-			return (Boolean) o;
-		return new Boolean(o.toString());
+		}
+		
+		if (type instanceof Object[]) {
+			return ((Object[]) type).length > 0;
+		} else if (type instanceof Collection) {
+			return ((Collection<?>) type).size() > 0;
+		} else if (type instanceof Boolean) {
+			return (Boolean) type;
+		}
+		
+		return new Boolean(type.toString());
 	}
 }

@@ -42,21 +42,27 @@ import org.bee.util.Misc;
 import org.bee.util.NullPrintStream;
 import org.bee.util.StreamCatcher;
 
+import jdepend.framework.BeeHelper;
+
 public class Configuration<T> {
 	
-	public static final String EXTENSIONS_PACKAGE = "org.bee.ext.";
-	public static String OPERATORS_PACKAGE = "org.bee.oper.";
-	public static String FUNCTIONS_PACKAGE = "org.bee.func.";
+	/** PACKAGES */
+	public static final String PKG_EXTENSIONS = "org.bee.ext.";
+	public static final String PKG_OPERATORS = "org.bee.oper.";
+	public static final String PKG_FUNCTIONS = "org.bee.func.";
+	
+	/** METHODS */
 	public static final String OPERATOR_METHOD_NAME = "doOperator";
 	public static final String FUNCTION_METHOD_NAME = "eval";
 	
-	public static final String[] RESERVED = { "-help", "-h", "-version", "-diagnostics", "-quiet", "-q", "-verbose", "-v", "-debug", "-d", "-lib", "-logfile", "-l", "-logger", "-listener", "-noinput", "-buildfile", "-file", "-f", "-keep-going", "-k", "-propertyfile", "-xpropertyfile", "-inputhandler", "-find", "-s", "-grammar", "-g", "-", "-r", "-th", "-targethelp", "--" };
+	/** RESERVED_KEYWORDS */
+	public static final String[] RESERVED_KEYWORDS = { "-help", "-h", "-version", "-diagnostics", "-quiet", "-q", "-verbose", "-v", "-debug", "-d", "-lib", "-logfile", "-l", "-logger", "-listener", "-noinput", "-buildfile", "-file", "-f", "-keep-going", "-k", "-propertyfile", "-xpropertyfile", "-inputhandler", "-find", "-s", "-grammar", "-g", "-", "-r", "-th", "-targethelp", "--" };
 	
 	public String beeFile;
 	protected Map<String, String> parameters;
 	protected Map<String, String> defines;
 	protected List<String> notRecognizableParam;
-	protected Map<String, Object> reserved;
+	protected Map<String, Object> reservedKeywords;
 	protected Properties extraProperties;
 	public List<String> targets;
 	protected List<String> arguments;
@@ -98,15 +104,16 @@ public class Configuration<T> {
 			 * @return
 			 * @see java.util.HashMap#put(java.lang.Object, java.lang.Object)
 			 */
-			public String put(String key, String val) {
-				if (!reserved.containsKey(key)) {
+			public String put(String key, String value) {
+				BeeHelper.debug("put(%s, %s)", key, value);
+				if (!reservedKeywords.containsKey(key)) {
 					if (notRecognizableParam == null) {
 						notRecognizableParam = new ArrayList<String>();
 					}
 					notRecognizableParam.add(key);
 				}
 				
-				return super.put(key, val);
+				return super.put(key, value);
 			}
 		};
 		
@@ -156,7 +163,8 @@ public class Configuration<T> {
 		if (key != null) {
 			parameters.put(key, "");
 		}
-		setLog();
+		
+		setLogger();
 		if (parameters.get("-easter-eggs") != null) {
 			System.out.printf("Author: Dmitriy Rogatkin, Rohtash Singh Lakra\n");
 		}
@@ -211,13 +219,14 @@ public class Configuration<T> {
 		
 		if (beeFile == null) {
 			try {
-				final Pattern p = Pattern.compile("bee[^/\\?:*]*.xml");
+				final Pattern beePattern = Pattern.compile("bee[^/\\?:*]*.xml");
 				do {
 					String[] beeFiles = (currentDir == null ? new File("./") : currentDir).list(new FilenameFilter() {
 						public boolean accept(File dir, String name) {
-							return p.matcher(name).matches();
+							return beePattern.matcher(name).matches();
 						}
 					});
+					
 					if (beeFiles.length > 0) {
 						// TODO possible to process all matching build scripts
 						// file names
@@ -231,8 +240,9 @@ public class Configuration<T> {
 						beeFile = beeFiles[0];
 						break;
 					} else {
-						if (currentDir == null)
+						if (currentDir == null) {
 							currentDir = new File("./").getAbsoluteFile();
+						}
 						currentDir = currentDir.getParentFile();
 					}
 				} while (searchUp && currentDir != null);
@@ -346,8 +356,10 @@ public class Configuration<T> {
 	 */
 	List<URL> getExtendClassPath() {
 		String extraClassPaths = parameters.get("-lib");
-		if (extraClassPaths == null)
+		if (extraClassPaths == null) {
 			return null;
+		}
+		
 		String libPaths[] = extraClassPaths.split(File.pathSeparator);
 		List<URL> extraUrls = new ArrayList<URL>();
 		for (String path : libPaths) {
@@ -358,32 +370,43 @@ public class Configuration<T> {
 						return Misc.hasValidClassLibExtension(name);
 					}
 				});
+				
 				for (File file : files) {
 					try {
 						extraUrls.add(file.toURL());
-					} catch (MalformedURLException e) {
-						logger.warning("Skipped :'" + file + "', because:" + e);
+					} catch (MalformedURLException ex) {
+						logger.warning("Skipped :'" + file + "', because:" + ex);
 					}
 				}
-			} else if (filePath.isFile())
-				if (Misc.hasValidClassLibExtension(filePath.getName()))
+			} else if (filePath.isFile()) {
+				if (Misc.hasValidClassLibExtension(filePath.getName())) {
 					try {
 						extraUrls.add(filePath.toURL());
-					} catch (MalformedURLException e) {
-						logger.warning("Skipped :'" + filePath + "', because:" + e);
+					} catch (MalformedURLException ex) {
+						logger.warning("Skipped :'" + filePath + "', because:" + ex);
 					}
+				}
+			}
 		}
+		
 		return extraUrls;
 	}
 	
 	// //////////////////////////////////////////////////////////////////
 	
+	/**
+	 * 
+	 */
 	protected void initReserved() {
-		reserved = new HashMap<String, Object>();
-		for (String rw : RESERVED)
-			reserved.put(rw, null);
+		reservedKeywords = new HashMap<String, Object>();
+		for (String keyword : RESERVED_KEYWORDS) {
+			reservedKeywords.put(keyword, null);
+		}
 	}
 	
+	/**
+	 * 
+	 */
 	protected void readExtraProperties() {
 		String propFile = parameters.get("-propertyfile");
 		if (propFile != null) {
@@ -399,38 +422,47 @@ public class Configuration<T> {
 			try {
 				Properties xmlProperties = new Properties();
 				xmlProperties.loadFromXML(new FileInputStream(propFile));
-				if (extraProperties != null)
+				if (extraProperties != null) {
 					extraProperties.putAll(xmlProperties);
-				else
+				} else {
 					extraProperties = xmlProperties;
+				}
 			} catch (IOException ioe) {
 				logger.log(SEVERE, "Specified properties file {0} can''t be read due {1}", new Object[] { propFile, ioe });
 			}
 		}
 	}
 	
-	protected void setLog() {
-		LoggerConfig lc = null;
-		Level logLevel = SEVERE;
-		if (parameters.get("-diagnostics") != null)
+	protected void setLogger() {
+		LoggerConfig loggerConfig = null;
+		Level logLevel = BeeHelper.getLogLevel();
+		if (parameters.get("-diagnostics") != null) {
 			logLevel = FINEST;
-		if (parameters.get("-verbose") != null || parameters.get("-v") != null)
+		}
+		
+		if (parameters.get("-verbose") != null || parameters.get("-v") != null) {
 			logLevel = FINER;
-		if (parameters.get("-debug") != null || parameters.get("-d") != null)
+		}
+		
+		if (parameters.get("-debug") != null || parameters.get("-d") != null) {
 			logLevel = FINE;
+		}
+		
 		if (parameters.get("-quiet") != null || parameters.get("-q") != null) {
 			logLevel = null;
 			System.setOut(new NullPrintStream(System.out));
 			System.setErr(System.out);
 		}
 		String paramValue = parameters.get("-logger");
-		if (paramValue != null)
+		if (paramValue != null) {
 			addLoggerClass(paramValue);
+		}
 		
 		boolean needLogConfigRead = logLevel != SEVERE;
 		paramValue = parameters.get("-logfile");
-		if (paramValue == null)
+		if (paramValue == null) {
 			paramValue = parameters.get("-l");
+		}
 		needLogConfigRead |= paramValue != null;
 		if (needLogConfigRead == false) {
 			if (System.getProperty(CONFIG_FILE_PROP) == null && System.getenv(CONFIG_FILE_PROP) != null) {
@@ -438,23 +470,26 @@ public class Configuration<T> {
 				needLogConfigRead = true;
 			}
 		} else {
-			lc = new LoggerConfig();
-			lc.setLogLevel(logLevel);
-			if (paramValue != null)
-				lc.setLogFile(paramValue);
-			String logConfigFile = lc.create();
+			loggerConfig = new LoggerConfig();
+			loggerConfig.setLogLevel(logLevel);
+			if (paramValue != null) {
+				loggerConfig.setLogFile(paramValue);
+			}
+			String logConfigFile = loggerConfig.create();
 			if (logConfigFile != null) {
 				System.setProperty(CONFIG_FILE_PROP, logConfigFile);
 				// System.out.println("Config "+logConfigFile);
 			}
 		}
-		if (needLogConfigRead)
+		
+		if (needLogConfigRead) {
 			try {
 				LogManager.getLogManager().readConfiguration();
 			} catch (IOException ioe) {
 				logger.setLevel(WARNING);
 				logger.warning("Logger configuration cannot be read, " + ioe);
 			}
+		}
 		logger.setLevel(logLevel);
 		// set some additional log parameters
 	}

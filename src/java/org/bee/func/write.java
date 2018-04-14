@@ -7,7 +7,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import jdepend.framework.JavaHelper;
+import jdepend.framework.BeeHelper;
 
 /**
  * @author <a href="Dmitriy@mochamail.com">Dmitriy Rogatkin</a>
@@ -47,7 +47,7 @@ public class write {
 		File file = new File(params[0].toString());
 		if (file.getParentFile() != null && !file.getParentFile().exists()) {
 			if (!file.getParentFile().mkdirs()) {
-				JavaHelper.warn("Unable to create folder:" + file.getParentFile().getAbsolutePath());
+				BeeHelper.warn("Unable to create folder:" + file.getParentFile().getAbsolutePath());
 				return false;
 			}
 		}
@@ -63,7 +63,7 @@ public class write {
 			System.err.printf("bee:func:write an exception %s in writing of %s.\n", ex, params[0]);
 			return false;
 		} finally {
-			JavaHelper.closeSilently(fileWriter);
+			BeeHelper.closeSilently(fileWriter);
 		}
 		
 		return true;

@@ -27,18 +27,23 @@ package org.bee.func;
 
 import java.util.regex.Pattern;
 
+import jdepend.framework.BeeHelper;
+
 /**
  * @author Dmitriy
  *
  * 
  */
 public class match {
-	public static boolean eval(String pattern, String s) {
-		if (DEBUG_)
-			System.out.printf("Process %s match %s =%b\n", s, pattern, Pattern.compile(pattern).matcher(s).matches());
-		// return Pattern.compile(pattern).matcher(s).matches();
-		return s.matches(pattern);
+	/**
+	 * 
+	 * @param pattern
+	 * @param string
+	 * @return
+	 */
+	public static boolean eval(String pattern, String string) {
+		BeeHelper.debug("Process %s match %s =%b\n", string, pattern, Pattern.compile(pattern).matcher(string).matches());
+		return string.matches(pattern);
 	}
 	
-	private static final boolean DEBUG_ = false;
 }

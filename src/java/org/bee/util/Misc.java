@@ -26,46 +26,61 @@ public class Misc {
 	 * for example 10d:12:34:56.103
 	 */
 	public static String formatTime(long time) {
-		if (time <= 0)
+		if (time <= 0) {
 			return "0:00";
+		}
+		
 		StringBuffer result = new StringBuffer();
 		int val = 0;
-		if (time % 1000 > 0)
+		if (time % 1000 > 0) {
 			result.append('.').append(String.valueOf(time % 1000));
+		}
 		time /= 1000;
 		
 		if (time > 0) {
 			val = (int) time % 60;
 			result.insert(0, val);
-			if (val < 10)
+			if (val < 10) {
 				result.insert(0, '0');
+			}
 			time /= 60;
 			if (time > 0) {
 				result.insert(0, ':');
 				val = (int) time % 60;
 				result.insert(0, val);
-				if (val < 10)
+				if (val < 10) {
 					result.insert(0, '0');
+				}
 				time /= 60;
 				if (time > 0) { // hours
 					result.insert(0, ':');
 					val = (int) time % 24;
 					result.insert(0, val);
-					if (val < 10)
+					if (val < 10) {
 						result.insert(0, '0');
+					}
 					time /= 24;
 					if (time > 0) {
 						result.insert(0, "d:");
 						result.insert(0, val);
 					}
 				}
-			} else
+			} else {
 				result.insert(0, "0:");
+			}
 		}
 		
 		return result.toString();
 	}
 	
+	/**
+	 * 
+	 * @param is
+	 * @param os
+	 * @param maxLen
+	 * @return
+	 * @throws IOException
+	 */
 	public static long copyStream(InputStream is, OutputStream os, long maxLen) throws IOException {
 		byte[] buffer = new byte[BUF_SIZE];
 		int len;
@@ -73,9 +88,11 @@ public class Misc {
 		while ((len = is.read(buffer)) > 0) {
 			os.write(buffer, 0, len);
 			result += len;
-			if (maxLen > 0 && result > maxLen)
+			if (maxLen > 0 && result > maxLen) {
 				break;
+			}
 		}
+		
 		return result;
 	}
 	
@@ -85,8 +102,10 @@ public class Misc {
 	
 	public static String[] splitBy(String pat) {
 		String[] components = pat.split("[/\\\\]");
-		if (DEBUG_)
+		if (DEBUG_) {
 			System.out.printf("pp: %s to %s \n", pat, java.util.Arrays.asList(components));
+		}
+		
 		String path = "";
 		List<String> result = new ArrayList<String>();
 		for (String pathComp : components) {
@@ -130,22 +149,37 @@ public class Misc {
 		return result.toString();
 	}
 	
+	/**
+	 * 
+	 * @param ar1
+	 * @param ar2
+	 * @return
+	 */
 	public static String[] merge(String[] ar1, String[] ar2) {
 		if (ar1 == null) {
 			ar1 = ar2;
 			ar2 = null;
 		}
+		
 		if (ar1 != null) {
-			if (ar2 == null || ar2.length == 0)
+			if (ar2 == null || ar2.length == 0) {
 				return ar1;
+			}
+			
 			String[] res = new String[ar1.length + ar2.length];
 			System.arraycopy(ar1, 0, res, 0, ar1.length);
 			System.arraycopy(ar2, 0, res, ar1.length, ar2.length);
 			return res;
 		}
+		
 		return null;
 	}
 	
+	/**
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public static boolean hasValidClassLibExtension(String name) {
 		name = name.toLowerCase();
 		return name.endsWith(".jar") || name.endsWith(".zip");

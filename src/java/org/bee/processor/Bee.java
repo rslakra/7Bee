@@ -17,6 +17,8 @@ import org.bee.util.InfoHolder;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
+import jdepend.framework.BeeHelper;
+
 /**
  * @author <a href="mailto:dmitriy@mochamail.com">Dmitriy Rogatkin</a>
  */
@@ -107,9 +109,12 @@ public class Bee extends AbstractBlock {
 	 *      java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		logger.finest("Bee: startElement(" + uri + ", " + localName + ", " + qName + ", " + attributes + ")");
 		homeDirectory = attributes.getValue("", ATTR_DIR);
-		if (configuration.isReevaluate())
+		if (configuration.isReevaluate()) {
 			children = new ArrayList<Instruction>(32);
+		}
+		
 		List<String> args = configuration.getArguments(this);
 		if (args != null) {
 			getNameSpace().inScope(new InfoHolder<String, InfoHolder, Object>(RESERVE_NAME_ARGS, new InfoHolder<String, String, List<String>>(RESERVE_NAME_ARGS, args.toString(), args)));

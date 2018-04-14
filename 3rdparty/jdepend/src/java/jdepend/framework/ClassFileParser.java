@@ -107,7 +107,7 @@ public class ClassFileParser extends AbstractParser {
 			in = new FileInputStream(classFile);
 			return parse(in);
 		} finally {
-			JavaHelper.closeSilently(in);
+			BeeHelper.closeSilently(in);
 		}
 	}
 	
@@ -126,8 +126,8 @@ public class ClassFileParser extends AbstractParser {
 		int magic = parseMagic();
 		int minorVersion = parseMinorVersion();
 		int majorVersion = parseMajorVersion();
+		BeeHelper.debug("magic: %s, minorVersion: %s, majorVersion: %s," + magic, minorVersion, majorVersion);
 		constantPool = parseConstantPool();
-		
 		parseAccessFlags();
 		
 		className = parseClassName();
@@ -169,23 +169,36 @@ public class ClassFileParser extends AbstractParser {
 		return magic;
 	}
 	
+	/**
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
 	private int parseMinorVersion() throws IOException {
 		return in.readUnsignedShort();
 	}
 	
+	/**
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
 	private int parseMajorVersion() throws IOException {
 		return in.readUnsignedShort();
 	}
 	
+	/**
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
 	private Constant[] parseConstantPool() throws IOException {
 		int constantPoolSize = in.readUnsignedShort();
 		Constant[] pool = new Constant[constantPoolSize];
 		for (int i = 1; i < constantPoolSize; i++) {
 			Constant constant = parseNextConstant();
 			pool[i] = constant;
-			//
 			// 8-byte constants use two constant pool entries
-			//
 			if (constant.getTag() == CONSTANT_DOUBLE || constant.getTag() == CONSTANT_LONG) {
 				i++;
 			}
@@ -549,24 +562,20 @@ public class ClassFileParser extends AbstractParser {
 		}
 		
 		public String toString() {
-			StringBuffer s = new StringBuffer("");
-			
+			StringBuffer stringBuffer = new StringBuffer("");
 			try {
 				
-				s.append("\n    name (#" + getNameIndex() + ") = " + toUTF8(getNameIndex()));
-				
-				s.append("\n    signature (#" + getDescriptorIndex() + ") = " + toUTF8(getDescriptorIndex()));
-				
+				stringBuffer.append("\n    name (#" + getNameIndex() + ") = " + toUTF8(getNameIndex()));
+				stringBuffer.append("\n    signature (#" + getDescriptorIndex() + ") = " + toUTF8(getDescriptorIndex()));
 				String[] types = descriptorToTypes(toUTF8(getDescriptorIndex()));
 				for (int t = 0; t < types.length; t++) {
-					s.append("\n        type = " + types[t]);
+					stringBuffer.append("\n        type = " + types[t]);
 				}
-				
-			} catch (Exception e) {
-				e.printStackTrace();
+			} catch (Exception ex) {
+				ex.printStackTrace();
 			}
 			
-			return s.toString();
+			return stringBuffer.toString();
 		}
 	}
 	
@@ -597,13 +606,9 @@ public class ClassFileParser extends AbstractParser {
 	 * @return String representation.
 	 */
 	public String toString() {
-		
 		StringBuffer s = new StringBuffer();
-		
 		try {
-			
 			s.append("\n" + className + ":\n");
-			
 			s.append("\nConstants:\n");
 			for (int i = 1; i < constantPool.length; i++) {
 				Constant entry = getConstantPoolEntry(i);
@@ -632,7 +637,7 @@ public class ClassFileParser extends AbstractParser {
 			}
 			
 			s.append("\nDependencies:\n");
-			Iterator imports = jClass.getImportedPackages().iterator();
+			Iterator<JavaPackage> imports = jClass.getImportedPackages().iterator();
 			while (imports.hasNext()) {
 				JavaPackage jPackage = (JavaPackage) imports.next();
 				s.append("    " + jPackage.getName() + "\n");
@@ -650,22 +655,16 @@ public class ClassFileParser extends AbstractParser {
 	 */
 	public static void main(String args[]) {
 		try {
-			
-			ClassFileParser.DEBUG = true;
-			
 			if (args.length <= 0) {
 				System.err.println("usage: ClassFileParser <class-file>");
 				System.exit(0);
 			}
 			
-			ClassFileParser parser = new ClassFileParser();
-			
-			parser.parse(new File(args[0]));
-			
-			System.err.println(parser.toString());
-			
-		} catch (Exception e) {
-			System.err.println(e.getMessage());
+			ClassFileParser classParser = new ClassFileParser();
+			classParser.parse(new File(args[0]));
+			System.err.println(classParser.toString());
+		} catch (Exception ex) {
+			System.err.println(ex.getMessage());
 		}
 	}
 }

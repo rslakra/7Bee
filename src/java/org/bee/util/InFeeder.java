@@ -30,6 +30,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Logger;
 
+import jdepend.framework.BeeHelper;
+
 /**
  * @author dmitriy
  * @author Rohtash Singh Lakra
@@ -37,61 +39,75 @@ import java.util.logging.Logger;
  *         TODO: consider encoding sometime
  */
 public class InFeeder extends Thread {
-	protected InputStream is;
+	protected InputStream inputStream;
 	protected String value;
-	protected OutputStream os;
-	protected boolean runs;
-	int buf_size = 256;
+	protected OutputStream outputStream;
+	protected boolean running;
+	final int BUFER_SIZE = 256;
 	
 	/**
 	 * 
-	 * @param is
-	 * @param os
+	 * @param inputStream
+	 * @param outputStream
 	 */
-	public InFeeder(InputStream is, OutputStream os) {
-		this.is = is;
-		this.os = os;
-		setName("In stream reader " + is);
+	public InFeeder(InputStream inputStream, OutputStream outputStream) {
+		this.inputStream = inputStream;
+		this.outputStream = outputStream;
+		setName("In stream reader " + inputStream);
 	}
 	
-	public InFeeder(String iv, OutputStream os) {
-		value = iv;
-		this.os = os;
+	/**
+	 * 
+	 * @param value
+	 * @param outputStream
+	 */
+	public InFeeder(String value, OutputStream outputStream) {
+		this.value = value;
+		this.outputStream = outputStream;
 		setName("Value reader ");
+	}
+	
+	/**
+	 * Returns the value of the <code>running</code> property.
+	 * 
+	 * @return
+	 */
+	public final boolean isRunning() {
+		return running;
 	}
 	
 	/**
 	 * @see java.lang.Thread#run()
 	 */
 	public void run() {
-		runs = true;
+		running = true;
 		try {
 			if (value != null) {
 				// encoding?
-				os.write(value.getBytes());
+				outputStream.write(value.getBytes());
 			} else {
-				byte buf[] = new byte[buf_size];
-				int n;
-				while (runs) {
-					if (is.available() > 0) {
-						n = is.read(buf);
-						if (n > 0) {
-							os.write(buf, 0, n);
-							os.flush();
+				byte buffer[] = new byte[BUFER_SIZE];
+				int length;
+				while (isRunning()) {
+					if (inputStream.available() > 0) {
+						length = inputStream.read(buffer);
+						if (length > 0) {
+							outputStream.write(buffer, 0, length);
+							outputStream.flush();
 						} else {
-							runs = false;
+							terminate();
 						}
 					} else {
 						try {
-							
 							Thread.sleep(100);
-						} catch (InterruptedException ie) {
+						} catch (InterruptedException ex) {
+							// ignore me!
 						}
 					}
 				}
 			}
 		} catch (IOException ex) {
-			Logger.getLogger("Bee").severe("Exception:" + ex);
+			Logger.getLogger("Bee").severe("Exception:" + BeeHelper.toString(ex));
 		}
 	}
 	
@@ -99,6 +115,6 @@ public class InFeeder extends Thread {
 	 * 
 	 */
 	public void terminate() {
-		runs = false;
+		running = false;
 	}
 }

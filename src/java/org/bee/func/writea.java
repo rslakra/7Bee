@@ -25,8 +25,6 @@
 
 package org.bee.func;
 
-import jdepend.framework.JavaHelper;
-
 /**
  * @author Dmitriy
  *
@@ -39,6 +37,6 @@ public class writea extends write {
 	 * @return
 	 */
 	public static boolean eval(Object... params) {
-		return write(true, JavaHelper.toStringArray(params));
+		return write(true, params);
 	}
 }
