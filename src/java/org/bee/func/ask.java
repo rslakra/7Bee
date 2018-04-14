@@ -17,21 +17,30 @@ import org.bee.util.NullPrintStream;
  */
 public class ask {
 	
+	/**
+	 * 
+	 * @param prompt
+	 * @param defVal
+	 * @return
+	 */
 	public static String eval(String prompt, String defVal) {
 		PrintStream printStream = System.out;
 		if (printStream instanceof NullPrintStream)
 			printStream = ((NullPrintStream) printStream).getOriginal();
-		if (prompt != null)
+		if (prompt != null) {
 			printStream.print(prompt);
-		else
+		} else {
 			printStream.print("?");
+		}
 		String result = readLine(System.in);
 		return result.length() == 0 ? defVal : result;
 	}
 	
 	static protected String readLine(InputStream is) {
-		if (is == null)
+		if (is == null) {
 			return "";
+		}
+		
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		int c;
 		try {

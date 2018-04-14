@@ -37,6 +37,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
 import java.security.KeyStore;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
@@ -524,6 +525,17 @@ public final class JavaHelper {
 	 */
 	public static final String toString(final Object[] objects) {
 		return toString(objects, false);
+	}
+	
+	/**
+	 * Converts the <code>objects</code> into <code>String[]</code>
+	 * 
+	 * @param objects
+	 * @return
+	 */
+	public static final String[] toStringArray(final Object... objects) {
+		// return Arrays.copyOf(objects, objects.length, String[].class);
+		return Arrays.stream(objects).toArray(String[]::new);
 	}
 	
 	/**

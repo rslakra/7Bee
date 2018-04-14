@@ -46,8 +46,10 @@ public class calc {
 	 * @return
 	 */
 	public static Object eval(Object... args) {
-		if (args[0] instanceof Collection)
+		if (args[0] instanceof Collection) {
 			args = ((Collection) args[0]).toArray();
+		}
+		
 		Stack<StateHolder> mem = new Stack<StateHolder>();
 		double result = 0d;
 		double current_oprd;

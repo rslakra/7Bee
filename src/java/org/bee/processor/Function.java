@@ -85,9 +85,9 @@ public class Function extends AbstractBlock {
 			if (method == null) {
 				method = getMethod(findFunctionClass(name), FUNCTION_METHOD_NAME, Object[].class);
 				if (method == null) {
-					Object[] arrayParameter = new Object[callParameters.length];
+					Object[] methodParameter = new Object[callParameters.length];
 					for (int i = 0; i < callParameters.length; i++) {
-						arrayParameter[i] = callParameters[i] == null ? null : callParameters[i].toString();
+						methodParameter[i] = callParameters[i] == null ? null : callParameters[i].toString();
 					}
 					
 					method = getMethod(findFunctionClass(name), FUNCTION_METHOD_NAME, String.class);
@@ -98,10 +98,10 @@ public class Function extends AbstractBlock {
 							// TODO check if getHelp is in function to print
 							// usage
 						} else {
-							object = method.invoke(null, new Object[] { arrayParameter });
+							object = method.invoke(null, new Object[] { methodParameter });
 						}
 					} else {
-						object = method.invoke(null, arrayParameter);
+						object = method.invoke(null, methodParameter);
 					}
 				} else {
 					object = method.invoke(null, new Object[] { callParameters });

@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import jdepend.framework.JavaHelper;
+
 /**
  * @author <a href="Dmitriy@mochamail.com">Dmitriy Rogatkin</a>
  *
@@ -19,42 +21,51 @@ public class write {
 	 */
 	public write() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 	
-	public static boolean eval(String... params) {
+	/**
+	 * 
+	 * @param params
+	 * @return
+	 */
+	public static boolean eval(Object... params) {
 		return write(false, params);
 	}
 	
-	protected static boolean write(boolean append, String... params) {
-		if (params.length < 2)
+	/**
+	 * 
+	 * @param append
+	 * @param params
+	 * @return
+	 */
+	protected static boolean write(boolean append, Object... params) {
+		if (params.length < 2) {
 			return false;
-		FileWriter fw = null;
-		File file = new File(params[0]);
-		if (file.getParentFile() != null && file.getParentFile().exists() == false)
-			if (file.getParentFile().mkdirs() == false)
+		}
+		
+		FileWriter fileWriter = null;
+		File file = new File(params[0].toString());
+		if (file.getParentFile() != null && !file.getParentFile().exists()) {
+			if (!file.getParentFile().mkdirs()) {
+				JavaHelper.warn("Unable to create folder:" + file.getParentFile().getAbsolutePath());
 				return false;
-		try {
-			// System.out.printf("write to %s %d\n", params[0],params.length );
-			fw = new FileWriter(file, append);
-			for (int i = 1; i < params.length; i++) {
-				if (params[i] != null)
-					fw.write(params[i]);
-				// fw.write("\r\n");
-				// System.out.print(params[i]);
 			}
-			// System.out.println();
-		} catch (IOException io) {
-			System.err.printf("bee:func:write an exception %s in writing of %s.\n", io, params[0]);
+		}
+		
+		try {
+			fileWriter = new FileWriter(file, append);
+			for (int i = 1; i < params.length; i++) {
+				if (params[i] != null) {
+					fileWriter.write(params[i].toString());
+				}
+			}
+		} catch (IOException ex) {
+			System.err.printf("bee:func:write an exception %s in writing of %s.\n", ex, params[0]);
 			return false;
 		} finally {
-			if (fw != null)
-				try {
-					fw.close();
-				} catch (IOException io) {
-					//
-				}
+			JavaHelper.closeSilently(fileWriter);
 		}
+		
 		return true;
 	}
 }

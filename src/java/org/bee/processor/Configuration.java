@@ -264,20 +264,21 @@ public class Configuration<T> {
 				final Process process = processBuilder.start();
 				new StreamCatcher(process.getErrorStream(), System.err).start();
 				new StreamCatcher(process.getInputStream(), System.out).start();
-				InFeeder ifr = new InFeeder(System.in, process.getOutputStream());
+				final InFeeder inFeeder = new InFeeder(System.in, process.getOutputStream());
 				Runtime.getRuntime().addShutdownHook(new Thread() {
 					public void run() {
 						process.destroy();
 					}
 				});
-				ifr.start();
+				inFeeder.start();
+				
 				try {
 					process.waitFor();
 				} catch (InterruptedException ie) {
 					//
 				}
 				
-				ifr.terminate();
+				inFeeder.terminate();
 				System.exit(0);
 			} catch (IOException ioe) {
 				logger.log(SEVERE, "Couldn't change current directory by restarting." + ioe);
@@ -289,8 +290,9 @@ public class Configuration<T> {
 		// File("./").getAbsolutePath(), System.getProperty("user.dir"));
 		// TODO: check for dtd config file to fill descriptors
 		logger.log(CONFIG, "Build file {0} in {1}", new Object[] { beeFile, System.getProperty("user.dir") });
-		if (notRecognizableParam != null)
+		if (notRecognizableParam != null) {
 			logger.severe("The following options weren't recognized " + notRecognizableParam);
+		}
 	}
 	
 	/**

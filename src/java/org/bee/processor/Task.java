@@ -99,10 +99,12 @@ public class Task extends Function {
 					}
 					environment.putAll(addEnv);
 					String workingDirectory = lookupStringValue(RESERVE_NAME_DIR);
-					if (workingDirectory != null)
+					if (workingDirectory != null) {
 						pb.directory(new File(workingDirectory));
-					else
+					} else {
 						pb.directory(new File(System.getProperty("user.dir")));
+					}
+					
 					Process p = pb.start();
 					StreamCatcher errorGobbler = new StreamCatcher(p.getErrorStream(), stdErrVar == null ? System.err : null);
 					StreamCatcher outputGobbler = new StreamCatcher(p.getInputStream(), stdOutVar == null ? System.out : null);
@@ -110,39 +112,47 @@ public class Task extends Function {
 					errorGobbler.start();
 					outputGobbler.start();
 					
-					InFeeder infr = null;
+					InFeeder inFeeder = null;
 					if (stdInVar != null) {
-						infr = new InFeeder(lookupStringValue(stdInVar), p.getOutputStream());
-						infr.start();
+						inFeeder = new InFeeder(lookupStringValue(stdInVar), p.getOutputStream());
+						inFeeder.start();
 					} else if (lookupStringValue(RESERVE_OPTION_NOINPUT) == null) {
-						infr = new InFeeder(System.in, p.getOutputStream());
-						infr.start();
+						inFeeder = new InFeeder(System.in, p.getOutputStream());
+						inFeeder.start();
 					}
 					try {
 						result = new InfoHolder<String, String, Object>("onexit", String.valueOf(p.waitFor()));
-						if (infr != null) {
-							infr.terminate();
-							infr.join();
+						if (inFeeder != null) {
+							inFeeder.terminate();
+							inFeeder.join();
 						}
 						outputGobbler.join();
 						errorGobbler.join();
 					} catch (InterruptedException ie) {
 					}
+					
 					// TODO: use flag to understand when out needed
-					if (outputGobbler.isEmpty() == false)
-						if (stdOutVar != null)
+					if (!outputGobbler.isEmpty()) {
+						if (stdOutVar != null) {
 							getNameSpace().inScope(new InfoHolder<String, InfoHolder, Object>(stdOutVar, new InfoHolder<String, String, Object>(stdOutVar, outputGobbler.toString())));
-						else
+						} else {
 							logger.finer(outputGobbler.toString());
-					if (errorGobbler.isEmpty() == false)
-						if (stdErrVar != null)
+						}
+					}
+					
+					if (!errorGobbler.isEmpty()) {
+						if (stdErrVar != null) {
 							getNameSpace().inScope(new InfoHolder<String, InfoHolder, Object>(stdErrVar, new InfoHolder<String, String, Object>(stdErrVar, errorGobbler.toString())));
-						else
+						} else {
 							logger.severe(errorGobbler.toString());
+						}
+					}
+					
 					// TODO: make result code constant
 					getNameSpace().inScope(new InfoHolder<String, InfoHolder, Object>(RESULT_CODE_VAR_NAME, result));
-					if (onExitHandler != null)
+					if (onExitHandler != null) {
 						onExitHandler.eval();
+					}
 				} catch (IOException ioe) {
 					getNameSpace().inScope(new InfoHolder<String, InfoHolder, Object>(RESERVE_NAME_ERROR, new InfoHolder<String, String, IOException>(RESERVE_NAME_ERROR, ioe.getMessage(), ioe)));
 					logger.severe("Can't start " + e + " " + ioe);

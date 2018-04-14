@@ -43,6 +43,11 @@ public class InFeeder extends Thread {
 	protected boolean runs;
 	int buf_size = 256;
 	
+	/**
+	 * 
+	 * @param is
+	 * @param os
+	 */
 	public InFeeder(InputStream is, OutputStream os) {
 		this.is = is;
 		this.os = os;
@@ -73,17 +78,20 @@ public class InFeeder extends Thread {
 						if (n > 0) {
 							os.write(buf, 0, n);
 							os.flush();
-						} else
+						} else {
 							runs = false;
-					} else
+						}
+					} else {
 						try {
+							
 							Thread.sleep(100);
 						} catch (InterruptedException ie) {
 						}
+					}
 				}
 			}
-		} catch (IOException ioe) {
-			Logger.getLogger("Bee").severe("Exception:" + ioe);
+		} catch (IOException ex) {
+			Logger.getLogger("Bee").severe("Exception:" + ex);
 		}
 	}
 	

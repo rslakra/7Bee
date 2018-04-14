@@ -81,9 +81,10 @@ public class warit {
 	};
 	
 	public static boolean eval(Object... args) {
-		if (args.length == 0)
+		if (args.length == 0) {
 			return false; // nothing to do
-			
+		}
+		
 		String warFileName = args[0].toString();
 		if (warFileName.toLowerCase().endsWith(WAR_EXT) == false)
 			warFileName += WAR_EXT;

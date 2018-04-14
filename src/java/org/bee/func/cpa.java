@@ -25,8 +25,8 @@
 
 package org.bee.func;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Dmitriy
@@ -34,6 +34,11 @@ import java.util.ArrayList;
  *         function copy but append if destination exists
  */
 public class cpa extends cp {
+	/**
+	 * 
+	 * @param copyPairs
+	 * @return
+	 */
 	public static List<String> eval(String... copyPairs) {
 		List<String> result = new ArrayList<String>();
 		for (int i = 0; i < copyPairs.length - 1; i += 2) {

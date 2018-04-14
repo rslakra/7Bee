@@ -3,13 +3,13 @@
 // Created on Apr 20, 2004
 package org.bee.func;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.FileFilter;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.bee.util.Misc;
 
@@ -21,14 +21,26 @@ import org.bee.util.Misc;
 public class cp {
 	protected boolean append;
 	
-	public static List<String> eval(String... copyPairs) {
+	/**
+	 * 
+	 * @param copyPairs
+	 * @return
+	 */
+	public static List<String> eval(Object... copyPairs) {
 		List<String> result = new ArrayList<String>();
 		for (int i = 0; i < copyPairs.length - 1; i += 2) {
-			new cp().copy(result, copyPairs[i], copyPairs[i + 1], false);
+			new cp().copy(result, copyPairs[i].toString(), copyPairs[i + 1].toString(), false);
 		}
 		return result;
 	}
 	
+	/**
+	 * 
+	 * @param copied
+	 * @param srcMask
+	 * @param dstMask
+	 * @param append
+	 */
 	protected void copy(List<String> copied, String srcMask, String dstMask, boolean append) {
 		if (DEBUG_)
 			System.out.printf("cp: %s %s (append %b)\n", srcMask, dstMask, append);
@@ -53,25 +65,37 @@ public class cp {
 			copy(copied, srcFile, srcParts, 1, dstParts[0], dstParts.length > 1 ? dstParts[dstParts.length - 1] : "", append);
 	}
 	
+	/**
+	 * 
+	 * @param copied
+	 * @param srcPath
+	 * @param parts
+	 * @param pos
+	 * @param destPath
+	 * @param renMask
+	 * @param append
+	 */
 	protected void copy(List<String> copied, File srcPath, String[] parts, int pos, String destPath, String renMask, boolean append) {
 		srcPath.listFiles(new FileCopier(copied, parts, pos, destPath, renMask, append));
 	}
 	
+	/**
+	 * 
+	 * @author Rohtash Lakra (rohtash.lakra@devamatre.com)
+	 * @author Rohtash Singh Lakra (rohtash.singh@gmail.com)
+	 * @created 2018-04-13 07:27:07 PM
+	 * @version 1.0.0
+	 * @since 1.0.0
+	 */
 	protected class FileCopier implements FileFilter {
 		protected String[] parts;
 		
 		protected int pos;
-		
 		protected String pat;
-		
 		protected String srcMask, renMask;
-		
 		protected String destPath;
-		
 		protected int srcConstLen;
-		
 		protected boolean append;
-		
 		protected List<String> copied;
 		
 		FileCopier(List<String> copied, String[] parts, int index, String destPath, String renMask, boolean append) {

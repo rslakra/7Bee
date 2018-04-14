@@ -11,6 +11,12 @@ package org.bee.func;
  *         first time is later
  */
 public class anynewer extends allnewer {
+	/**
+	 * 
+	 * @param srcPath
+	 * @param dstPath
+	 * @return
+	 */
 	public static boolean eval(String srcPath, String dstPath) {
 		return allnewer.eval(srcPath, dstPath);
 	}

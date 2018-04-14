@@ -25,13 +25,20 @@
 
 package org.bee.func;
 
+import jdepend.framework.JavaHelper;
+
 /**
  * @author Dmitriy
  *
  *         function like write but append if destination exists
  */
 public class writea extends write {
-	public static boolean eval(String... params) {
-		return write(true, params);
+	/**
+	 * 
+	 * @param params
+	 * @return
+	 */
+	public static boolean eval(Object... params) {
+		return write(true, JavaHelper.toStringArray(params));
 	}
 }
