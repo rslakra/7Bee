@@ -23,6 +23,12 @@ public class allnewer {
 		super();
 	}
 	
+	/**
+	 * 
+	 * @param srcPath
+	 * @param dstPath
+	 * @return
+	 */
 	public static boolean eval(String srcPath, String dstPath) {
 		FileWithMask srcMask = getMask(new File(srcPath));
 		FileWithMask dstMask = getMask(new File(dstPath));
@@ -30,40 +36,69 @@ public class allnewer {
 			System.out.printf("allnewer: masks: %s <---> %s %n", srcMask.mask, dstMask.mask);
 			System.out.printf("allnewer: %s @%d, %s @%d\n", srcPath, newest(0, srcMask.path, srcMask.mask), dstPath, newest(0, dstMask.path, dstMask.mask));
 		}
+		
 		return newest(0, srcMask.path, srcMask.mask) > newest(0, dstMask.path, dstMask.mask);
 	}
 	
+	/**
+	 * 
+	 * @param newest
+	 * @param path
+	 * @param mask
+	 * @return
+	 */
 	protected static long newest(long newest, File path, String mask) {
 		if (path.exists()) {
 			if (path.isDirectory()) {
 				File[] fs = path.listFiles();
-				if (fs != null)
-					for (File f : fs)
-						if (mask == null || f.getName().matches(mask))
+				if (fs != null) {
+					for (File f : fs) {
+						if (mask == null || f.getName().matches(mask)) {
 							newest = Math.max(newest, newest(newest, f, mask));
+						}
+					}
+				}
 			} else {
 				if (newest < path.lastModified()) {
 					newest = path.lastModified();
-					if (DEBUG_)
+					if (DEBUG_) {
 						System.out.printf("allnewer: updated for %s%n", path);
+					}
 				}
 			}
-		} else if (DEBUG_)
+		} else if (DEBUG_) {
 			System.out.printf("allnewer: Non existent %s\n", path);
+		}
+		
 		return newest;
 	}
 	
+	/**
+	 * 
+	 * @param path
+	 * @return
+	 */
 	protected static FileWithMask getMask(File path) {
 		String mask = path.getName();
 		if (mask.indexOf('?') >= 0 || mask.indexOf('*') >= 0) {
 			path = path.getParentFile();
-			if (path == null)
+			if (path == null) {
 				path = new File("." + File.separator);
+			}
 			return new FileWithMask(path, Misc.wildCardToRegExpr(mask).replace(".", "\\."));
 		}
+		
 		return new FileWithMask(path, null);
 	}
 	
+	/**
+	 * 
+	 * @author Rohtash Lakra (rohtash.lakra@devamatre.com)
+	 * @author Rohtash Singh Lakra (rohtash.singh@gmail.com)
+	 * @created 2018-04-13 05:26:23 PM 
+	 * @version 1.0.0
+	 * @since 1.0.0
+	 */
 	protected static final class FileWithMask {
 		protected FileWithMask(File p, String m) {
 			path = p;
@@ -71,7 +106,6 @@ public class allnewer {
 		}
 		
 		public String mask;
-		
 		public File path;
 	}
 	

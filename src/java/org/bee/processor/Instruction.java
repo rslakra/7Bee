@@ -78,7 +78,7 @@ public interface Instruction {
 	 * 
 	 * @return <code>InfoHolder</code>
 	 */
-	InfoHolder eval(); // eval
+	InfoHolder<String, String, Object> eval(); // eval
 	
 	/**
 	 * call back from processor to set parent instruction
@@ -149,8 +149,6 @@ public interface Instruction {
 		
 		/**
 		 * Remove expression or variable out of scope
-		 * 
-		 *
 		 */
 		void outScope(InfoHolder<String, InfoHolder, Object> var);
 		

@@ -20,6 +20,10 @@ public abstract class AbstractBlock extends AbstractValue {
 	protected Instruction.NameSpace nameSpace;
 	protected String dir;
 	
+	/**
+	 * 
+	 * @param xpath
+	 */
 	protected AbstractBlock(String xpath) {
 		super(xpath);
 		nameSpace = new NameSpaceImpl();
@@ -34,6 +38,11 @@ public abstract class AbstractBlock extends AbstractValue {
 		return name;
 	}
 	
+	/**
+	 * 
+	 * @return
+	 * @see org.bee.processor.AbstractValue#getNameSpace()
+	 */
 	public NameSpace getNameSpace() {
 		return nameSpace;
 	}
@@ -51,15 +60,32 @@ public abstract class AbstractBlock extends AbstractValue {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param uri
+	 * @param localName
+	 * @param qName
+	 * @param attributes
+	 * @throws SAXException
+	 * @see org.bee.processor.AbstractValue#startElement(java.lang.String,
+	 *      java.lang.String, java.lang.String, org.xml.sax.Attributes)
+	 */
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 		super.startElement(uri, localName, qName, attributes);
-		if (name == null)
+		if (name == null) {
 			name = attributes.getValue("", ATTR_VARIABLE);
+		}
 		dir = attributes.getValue("", ATTR_DIR);
-		if (dir != null)
+		if (dir != null) {
 			getNameSpace().inScope(new InfoHolder<String, InfoHolder, Object>(RESERVE_NAME_DIR, new InfoHolder<String, String, Object>(RESERVE_NAME_DIR, lookupStringValue(dir))));
+		}
 	}
 	
+	/**
+	 * 
+	 * @return
+	 * @see org.bee.processor.AbstractValue#getAllowedAttributeNames()
+	 */
 	public String[] getAllowedAttributeNames() {
 		return Misc.merge(new String[] { ATTR_DIR }, super.getAllowedAttributeNames());
 	}

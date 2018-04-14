@@ -34,6 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.regex.Pattern;
 
+import org.bee.CompileStamp;
 import org.bee.util.InFeeder;
 import org.bee.util.InfoHolder;
 import org.bee.util.LoggerConfig;
@@ -41,39 +42,29 @@ import org.bee.util.Misc;
 import org.bee.util.NullPrintStream;
 import org.bee.util.StreamCatcher;
 
-public class Configuration<FRIEND> {
+public class Configuration<T> {
+	
 	public static final String EXTENSIONS_PACKAGE = "org.bee.ext.";
-	
 	public static String OPERATORS_PACKAGE = "org.bee.oper.";
-	
 	public static String FUNCTIONS_PACKAGE = "org.bee.func.";
-	
 	public static final String OPERATOR_METHOD_NAME = "doOperator";
-	
 	public static final String FUNCTION_METHOD_NAME = "eval";
 	
 	public static final String[] RESERVED = { "-help", "-h", "-version", "-diagnostics", "-quiet", "-q", "-verbose", "-v", "-debug", "-d", "-lib", "-logfile", "-l", "-logger", "-listener", "-noinput", "-buildfile", "-file", "-f", "-keep-going", "-k", "-propertyfile", "-xpropertyfile", "-inputhandler", "-find", "-s", "-grammar", "-g", "-", "-r", "-th", "-targethelp", "--" };
 	
 	public String beeFile;
-	
 	protected Map<String, String> parameters;
-	
 	protected Map<String, String> defines;
-	
 	protected List<String> notRecognizableParam;
-	
 	protected Map<String, Object> reserved;
-	
 	protected Properties extraProperties;
-	
 	public List<String> targets;
-	
 	protected List<String> arguments;
 	
 	// friend
 	Integer exitCode;
 	
-	public InfoHolder[] descriptors = { new InfoHolder<String, String, Object>("bee", "org.bee.processor.Bee"), new InfoHolder<String, String, Object>("bee/expression", "org.bee.processor.Expression"), new InfoHolder<String, String, Object>("*/parameter/expression", "org.bee.processor.Expression"), new InfoHolder<String, String, Object>("*/block/expression", "org.bee.processor.Expression"), new InfoHolder<String, String, Object>("*/then/expression", "org.bee.processor.Expression"), new InfoHolder<String, String, Object>("*/else/expression", "org.bee.processor.Expression"), new InfoHolder<String, String, Object>("bee/target/dependency/expression", "org.bee.processor.Expression"), new InfoHolder<String, String, Object>("*/switch/expression", "org.bee.processor.Expression"), new InfoHolder<String, String, Object>("*/if/expression", "org.bee.processor.Expression"), new InfoHolder<String, String, Object>("*/for/block", "org.bee.processor.Block"), new InfoHolder<String, String, Object>("*/if/block", "org.bee.processor.Block"), new InfoHolder<String, String, Object>("*/if/then", "org.bee.processor.Then"), new InfoHolder<String, String, Object>("*/if/else", "org.bee.processor.Else"), new InfoHolder<String, String, Object>("bee/target/block", "org.bee.processor.Block"), new InfoHolder<String, String, Object>("*/switch/block", "org.bee.processor.Block"), new InfoHolder<String, String, Object>("bee/block", "org.bee.processor.Block"), new InfoHolder<String, String, Object>("*/task/onexception/block", "org.bee.processor.Block"), new InfoHolder<String, String, Object>("*/variable", "org.bee.processor.Variable"), new InfoHolder<String, String, Object>("*/value", "org.bee.processor.Value"), new InfoHolder<String, String, Object>("*/echo", "org.bee.processor.Echo"), new InfoHolder<String, String, Object>("*/target/dependency", "org.bee.processor.Dependency"), new InfoHolder<String, String, Object>("*/task/parameter", "org.bee.processor.Parameter"), new InfoHolder<String, String, Object>("*/function/parameter", "org.bee.processor.Parameter"), new InfoHolder<String, String, Object>("*/block/function", "org.bee.processor.Function"), new InfoHolder<String, String, Object>("*/then/function", "org.bee.processor.Function"), new InfoHolder<String, String, Object>("*/else/function", "org.bee.processor.Function"), new InfoHolder<String, String, Object>("*/expression/function", "org.bee.processor.Function"), new InfoHolder<String, String, Object>("*/operator/function", "org.bee.processor.Function"), new InfoHolder<String, String, Object>("*/parameter/function", "org.bee.processor.Function"), new InfoHolder<String, String, Object>("*/parameter/operator", "org.bee.processor.Operator"), new InfoHolder<String, String, Object>("bee/target/dependency/function", "org.bee.processor.Function"), new InfoHolder<String, String, Object>("*/expression/operator", "org.bee.processor.Operator"), new InfoHolder<String, String, Object>("*/block/operator", "org.bee.processor.Operator"), new InfoHolder<String, String, Object>("*/then/operator", "org.bee.processor.Operator"), new InfoHolder<String, String, Object>("*/else/operator", "org.bee.processor.Operator"), new InfoHolder<String, String, Object>("*/operator/operator", "org.bee.processor.Operator"), new InfoHolder<String, String, Object>("*/dependency/operator", "org.bee.processor.Operator"), new InfoHolder<String, String, Object>("*/block/interrupt", "org.bee.processor.Interrupt"), new InfoHolder<String, String, Object>("*/then/interrupt", "org.bee.processor.Interrupt"), new InfoHolder<String, String, Object>("*/else/interrupt", "org.bee.processor.Interrupt"), new InfoHolder<String, String, Object>("*/for/interrupt", "org.bee.processor.Interrupt"), new InfoHolder<String, String, Object>("*/expression/for", "org.bee.processor.For"), new InfoHolder<String, String, Object>("bee/target/for", "org.bee.processor.For"), new InfoHolder<String, String, Object>("*/block/for", "org.bee.processor.For"), new InfoHolder<String, String, Object>("*/then/for", "org.bee.processor.For"), new InfoHolder<String, String, Object>("*/else/for", "org.bee.processor.For"), new InfoHolder<String, String, Object>("*/value", "org.bee.processor.Value"), new InfoHolder<String, String, Object>("*/block/if", "org.bee.processor.If"), new InfoHolder<String, String, Object>("*/then/if", "org.bee.processor.If"), new InfoHolder<String, String, Object>("*/else/if", "org.bee.processor.If"),
+	public InfoHolder<?, ?, ?>[] descriptors = { new InfoHolder<String, String, Object>("bee", "org.bee.processor.Bee"), new InfoHolder<String, String, Object>("bee/expression", "org.bee.processor.Expression"), new InfoHolder<String, String, Object>("*/parameter/expression", "org.bee.processor.Expression"), new InfoHolder<String, String, Object>("*/block/expression", "org.bee.processor.Expression"), new InfoHolder<String, String, Object>("*/then/expression", "org.bee.processor.Expression"), new InfoHolder<String, String, Object>("*/else/expression", "org.bee.processor.Expression"), new InfoHolder<String, String, Object>("bee/target/dependency/expression", "org.bee.processor.Expression"), new InfoHolder<String, String, Object>("*/switch/expression", "org.bee.processor.Expression"), new InfoHolder<String, String, Object>("*/if/expression", "org.bee.processor.Expression"), new InfoHolder<String, String, Object>("*/for/block", "org.bee.processor.Block"), new InfoHolder<String, String, Object>("*/if/block", "org.bee.processor.Block"), new InfoHolder<String, String, Object>("*/if/then", "org.bee.processor.Then"), new InfoHolder<String, String, Object>("*/if/else", "org.bee.processor.Else"), new InfoHolder<String, String, Object>("bee/target/block", "org.bee.processor.Block"), new InfoHolder<String, String, Object>("*/switch/block", "org.bee.processor.Block"), new InfoHolder<String, String, Object>("bee/block", "org.bee.processor.Block"), new InfoHolder<String, String, Object>("*/task/onexception/block", "org.bee.processor.Block"), new InfoHolder<String, String, Object>("*/variable", "org.bee.processor.Variable"), new InfoHolder<String, String, Object>("*/value", "org.bee.processor.Value"), new InfoHolder<String, String, Object>("*/echo", "org.bee.processor.Echo"), new InfoHolder<String, String, Object>("*/target/dependency", "org.bee.processor.Dependency"), new InfoHolder<String, String, Object>("*/task/parameter", "org.bee.processor.Parameter"), new InfoHolder<String, String, Object>("*/function/parameter", "org.bee.processor.Parameter"), new InfoHolder<String, String, Object>("*/block/function", "org.bee.processor.Function"), new InfoHolder<String, String, Object>("*/then/function", "org.bee.processor.Function"), new InfoHolder<String, String, Object>("*/else/function", "org.bee.processor.Function"), new InfoHolder<String, String, Object>("*/expression/function", "org.bee.processor.Function"), new InfoHolder<String, String, Object>("*/operator/function", "org.bee.processor.Function"), new InfoHolder<String, String, Object>("*/parameter/function", "org.bee.processor.Function"), new InfoHolder<String, String, Object>("*/parameter/operator", "org.bee.processor.Operator"), new InfoHolder<String, String, Object>("bee/target/dependency/function", "org.bee.processor.Function"), new InfoHolder<String, String, Object>("*/expression/operator", "org.bee.processor.Operator"), new InfoHolder<String, String, Object>("*/block/operator", "org.bee.processor.Operator"), new InfoHolder<String, String, Object>("*/then/operator", "org.bee.processor.Operator"), new InfoHolder<String, String, Object>("*/else/operator", "org.bee.processor.Operator"), new InfoHolder<String, String, Object>("*/operator/operator", "org.bee.processor.Operator"), new InfoHolder<String, String, Object>("*/dependency/operator", "org.bee.processor.Operator"), new InfoHolder<String, String, Object>("*/block/interrupt", "org.bee.processor.Interrupt"), new InfoHolder<String, String, Object>("*/then/interrupt", "org.bee.processor.Interrupt"), new InfoHolder<String, String, Object>("*/else/interrupt", "org.bee.processor.Interrupt"), new InfoHolder<String, String, Object>("*/for/interrupt", "org.bee.processor.Interrupt"), new InfoHolder<String, String, Object>("*/expression/for", "org.bee.processor.For"), new InfoHolder<String, String, Object>("bee/target/for", "org.bee.processor.For"), new InfoHolder<String, String, Object>("*/block/for", "org.bee.processor.For"), new InfoHolder<String, String, Object>("*/then/for", "org.bee.processor.For"), new InfoHolder<String, String, Object>("*/else/for", "org.bee.processor.For"), new InfoHolder<String, String, Object>("*/value", "org.bee.processor.Value"), new InfoHolder<String, String, Object>("*/block/if", "org.bee.processor.If"), new InfoHolder<String, String, Object>("*/then/if", "org.bee.processor.If"), new InfoHolder<String, String, Object>("*/else/if", "org.bee.processor.If"),
 					// new InfoHolder<String, String, Object>("*/then/if",
 					// "org.bee.processor.If"),
 					// new InfoHolder<String, String, Object>("*/else/if",
@@ -82,21 +73,43 @@ public class Configuration<FRIEND> {
 	
 	public static String CONFIG_FILE_PROP = "java.util.logging.config.file";
 	
-	public static Configuration readConfiguration(String... args) {
-		return new Configuration(args);
+	/**
+	 * 
+	 * @param args
+	 * @return
+	 */
+	public static <T> Configuration<T> readConfiguration(String... args) {
+		return new Configuration<T>(args);
 	}
 	
+	/**
+	 * 
+	 * @param args
+	 */
 	public Configuration(String... args) {
 		parameters = new HashMap<String, String>() {
+			/** serialVersionUID */
+			private static final long serialVersionUID = 1L;
+			
+			/**
+			 * 
+			 * @param key
+			 * @param val
+			 * @return
+			 * @see java.util.HashMap#put(java.lang.Object, java.lang.Object)
+			 */
 			public String put(String key, String val) {
-				if (reserved.containsKey(key) == false) {
-					if (notRecognizableParam == null)
+				if (!reserved.containsKey(key)) {
+					if (notRecognizableParam == null) {
 						notRecognizableParam = new ArrayList<String>();
+					}
 					notRecognizableParam.add(key);
 				}
+				
 				return super.put(key, val);
 			}
 		};
+		
 		defines = new HashMap<String, String>();
 		targets = new ArrayList<String>();
 		initReserved();
@@ -104,13 +117,16 @@ public class Configuration<FRIEND> {
 		boolean inRunArgs = false;
 		for (String arg : args) {
 			if (inRunArgs) {
-				if (arguments == null)
+				if (arguments == null) {
 					arguments = new ArrayList<String>();
+				}
 				arguments.add(arg);
 			} else {
 				if (arg.startsWith("-")) {
-					if (key != null)
+					if (key != null) {
 						parameters.put(key, "");
+					}
+					
 					if (arg.equals("--")) {
 						inRunArgs = true;
 						continue;
@@ -125,38 +141,55 @@ public class Configuration<FRIEND> {
 					}
 					key = arg;
 				} else if (key != null) {
-					if (key.startsWith("-D"))
+					if (key.startsWith("-D")) {
 						defines.put(key.substring(2), arg);
-					else
+					} else {
 						parameters.put(key, arg);
+					}
 					key = null;
-				} else
+				} else {
 					targets.add(arg);
+				}
 			}
 		}
-		if (key != null)
+		
+		if (key != null) {
 			parameters.put(key, "");
+		}
 		setLog();
-		if (parameters.get("-easter-eggs") != null)
-			System.out.printf("Author: Dmitriy Rogatkin\n");
+		if (parameters.get("-easter-eggs") != null) {
+			System.out.printf("Author: Dmitriy Rogatkin, Rohtash Singh Lakra\n");
+		}
+		
 		if (parameters.get("-version") != null) {
-			System.out.printf("7Bee version %d.%d.%d compiled on %s\r\n", 1, 1, 2, org.bee.CompileStamp.getStamp());
+			System.out.printf("7Bee version %d.%d.%d compiled on %s\r\n", 1, 1, 2, CompileStamp.getStamp());
 			exit(0);
 		}
-		if (parameters.get("-h") != null || parameters.get("-help") != null)
+		
+		if (parameters.get("-h") != null || parameters.get("-help") != null) {
 			printHelp();
-		if (exitCode != null)
+		}
+		
+		if (exitCode != null) {
 			return;
+		}
+		
 		String extGrammar = parameters.get("-g");
-		if (extGrammar == null)
+		if (extGrammar == null) {
 			extGrammar = parameters.get("-grammar");
-		if (extGrammar != null)
+		}
+		if (extGrammar != null) {
 			reloadGrammar(extGrammar);
+		}
 		beeFile = parameters.get("-f");
-		if (beeFile == null)
+		if (beeFile == null) {
 			beeFile = parameters.get("-file");
-		if (beeFile == null)
+		}
+		
+		if (beeFile == null) {
 			beeFile = parameters.get("-buildfile");
+		}
+		
 		boolean searchUp = false;
 		File currentDir = null;
 		if (beeFile == null) {
@@ -165,9 +198,9 @@ public class Configuration<FRIEND> {
 				beeFile = parameters.get("-find");
 			if (beeFile != null) {
 				searchUp = true;
-				if (beeFile.length() == 0)
+				if (beeFile.length() == 0) {
 					beeFile = null;
-				else if (new File(beeFile).exists() == false) {
+				} else if (new File(beeFile).exists() == false) {
 					currentDir = new File("./").getAbsoluteFile().getParentFile();
 					while (currentDir != null && new File(currentDir, beeFile).exists() == false) {
 						currentDir = currentDir.getParentFile();
@@ -175,6 +208,7 @@ public class Configuration<FRIEND> {
 				}
 			}
 		}
+		
 		if (beeFile == null) {
 			try {
 				final Pattern p = Pattern.compile("bee[^/\\?:*]*.xml");
@@ -208,6 +242,7 @@ public class Configuration<FRIEND> {
 				logger.log(SEVERE, "No any files in current directory matching to build file pattern.");
 			}
 		}
+		
 		if (searchUp && currentDir != null) {
 			System.setProperty("user.dir", currentDir.toString());
 			List<String> cmdLine = new ArrayList<String>();
@@ -215,30 +250,33 @@ public class Configuration<FRIEND> {
 			cmdLine.add("-DJAVA_HOME=" + System.getProperty("JAVA_HOME"));
 			cmdLine.add("-jar");
 			cmdLine.add(new File(System.getenv("BEE_HOME"), "lib" + File.separatorChar + "bee.jar").toString());
-			for (String arg : args)
+			for (String arg : args) {
 				cmdLine.add(arg);
+			}
+			
 			try {
 				// Process p =
 				// Runtime.getRuntime().exec((String[])cmdLine.toArray(new
 				// String[cmdLine.size()]), null, currentDir);
-				ProcessBuilder pb = new ProcessBuilder(cmdLine);
-				pb.directory(currentDir);
+				final ProcessBuilder processBuilder = new ProcessBuilder(cmdLine);
+				processBuilder.directory(currentDir);
 				logger.log(FINEST, "restart:" + cmdLine);
-				final Process p = pb.start();
-				new StreamCatcher(p.getErrorStream(), System.err).start();
-				new StreamCatcher(p.getInputStream(), System.out).start();
-				InFeeder ifr = new InFeeder(System.in, p.getOutputStream());
+				final Process process = processBuilder.start();
+				new StreamCatcher(process.getErrorStream(), System.err).start();
+				new StreamCatcher(process.getInputStream(), System.out).start();
+				InFeeder ifr = new InFeeder(System.in, process.getOutputStream());
 				Runtime.getRuntime().addShutdownHook(new Thread() {
 					public void run() {
-						p.destroy();
+						process.destroy();
 					}
 				});
 				ifr.start();
 				try {
-					p.waitFor();
+					process.waitFor();
 				} catch (InterruptedException ie) {
 					//
 				}
+				
 				ifr.terminate();
 				System.exit(0);
 			} catch (IOException ioe) {
@@ -255,15 +293,30 @@ public class Configuration<FRIEND> {
 			logger.severe("The following options weren't recognized " + notRecognizableParam);
 	}
 	
-	public List<String> getArguments(FRIEND firend) {
+	/**
+	 * 
+	 * @param firend
+	 * @return
+	 */
+	public List<String> getArguments(T firend) {
 		return arguments;
 	}
 	
-	public Map<String, String> getDefines(FRIEND firend) {
+	/**
+	 * 
+	 * @param firend
+	 * @return
+	 */
+	public Map<String, String> getDefines(T firend) {
 		return defines;
 	}
 	
-	public Properties getExtraProperties(FRIEND firend) {
+	/**
+	 * 
+	 * @param firend
+	 * @return
+	 */
+	public Properties getExtraProperties(T firend) {
 		return extraProperties;
 	}
 	
@@ -404,6 +457,10 @@ public class Configuration<FRIEND> {
 		// set some additional log parameters
 	}
 	
+	/**
+	 * 
+	 * @param fileName
+	 */
 	protected void reloadGrammar(String fileName) {
 		Properties grammarProps = new Properties();
 		try {
@@ -432,6 +489,10 @@ public class Configuration<FRIEND> {
 		exit(1);
 	}
 	
+	/**
+	 * 
+	 * @param code
+	 */
 	protected void exit(int code) {
 		exitCode = code;
 	}

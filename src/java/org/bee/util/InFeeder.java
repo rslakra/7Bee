@@ -32,19 +32,15 @@ import java.util.logging.Logger;
 
 /**
  * @author dmitriy
+ * @author Rohtash Singh Lakra
  * 
- * 
+ *         TODO: consider encoding sometime
  */
 public class InFeeder extends Thread {
-	// TODO: consider encoding sometime
 	protected InputStream is;
-	
 	protected String value;
-	
 	protected OutputStream os;
-	
 	protected boolean runs;
-	
 	int buf_size = 256;
 	
 	public InFeeder(InputStream is, OutputStream os) {
@@ -59,12 +55,16 @@ public class InFeeder extends Thread {
 		setName("Value reader ");
 	}
 	
+	/**
+	 * @see java.lang.Thread#run()
+	 */
 	public void run() {
 		runs = true;
 		try {
-			if (value != null)
-				os.write(value.getBytes()); // encoding?
-			else {
+			if (value != null) {
+				// encoding?
+				os.write(value.getBytes());
+			} else {
 				byte buf[] = new byte[buf_size];
 				int n;
 				while (runs) {
@@ -87,6 +87,9 @@ public class InFeeder extends Thread {
 		}
 	}
 	
+	/**
+	 * 
+	 */
 	public void terminate() {
 		runs = false;
 	}

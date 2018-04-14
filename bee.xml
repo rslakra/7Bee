@@ -71,7 +71,7 @@
 				<parameter value="src/java/org/bee/CompileStamp.java"
 					type="file" />
 				<parameter>package org.bee;
-					public class CompileStamp {
+					public final class CompileStamp {
 					public static
 					final String getStamp() {
 					return &quot;</parameter>

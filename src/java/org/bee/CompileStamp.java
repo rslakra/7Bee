@@ -1,11 +1,7 @@
 package org.bee;
-
-public class CompileStamp {
-	/**
-	 * 
-	 * @return
-	 */
-	public static final String getStamp() {
-		return "Wed Feb 21 12:22:57 2018";
-	}
-}
+					public final class CompileStamp {
+					public static
+					final String getStamp() {
+					return "Fri Apr 13 17:27:00 PDT 2018";
+					}
+					}

@@ -12,6 +12,7 @@ import java.util.Map;
 
 import jdepend.framework.ClassFileParser;
 import jdepend.framework.JavaClass;
+import jdepend.framework.JavaHelper;
 
 /**
  * @author <a href="dmitriy@mochamail.com">Dmitriy Rogatkin</a>
@@ -26,7 +27,6 @@ public class newerwithdependency extends newerthan {
 	 */
 	public newerwithdependency() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 	
 	public static List eval(String srcPath, String dstPath, String defClass) {
@@ -34,7 +34,7 @@ public class newerwithdependency extends newerthan {
 	}
 	
 	public static List eval(String srcPath, String dstPath, String defClass, String pkgPrefPath) {
-		if (DEBUG_)
+		if (JavaHelper.isDebugEnabled())
 			System.out.printf("newerwithdependency:parameters %s -> %s\n", srcPath, dstPath);
 		List<String> result = newerthan.eval(srcPath, dstPath);
 		// make it map for fast check
@@ -51,7 +51,7 @@ public class newerwithdependency extends newerthan {
 			return result;
 		}
 		Map<String, String> srcClasses = new HashMap<String, String>(result.size());
-		if (DEBUG_)
+		if (JavaHelper.isDebugEnabled())
 			System.out.println("newerwithdependency:src path:" + srcPath);
 		if (pkgPrefPath != null && pkgPrefPath.length() > 0) {
 			pkgPrefPath = pkgPrefPath.replace(File.separatorChar, '/');
@@ -68,7 +68,7 @@ public class newerwithdependency extends newerthan {
 		}
 		// traverse all files
 		dstPath = extractPath(normalize(dstPath));
-		if (DEBUG_)
+		if (JavaHelper.isDebugEnabled())
 			System.out.println("newerwithdependency:looking for:" + srcClasses);
 		processDirectory(result, new File(dstPath), srcPath, srcClasses, srcExt, dstExt);
 		// if a class has dependencies in the map, add to result
@@ -101,11 +101,14 @@ public class newerwithdependency extends newerthan {
 				System.err.printf("newerwithdependency: %s was skipped due %s\n", f.toString(), ioe.toString());
 				continue;
 			}
+			
 			List<String> currentDepends = classParser.getDependencies();
 			for (String dependName : currentDepends)
 				if (dependencies.get(dependName) != null) {
-					if (DEBUG_)
+					if (JavaHelper.isDebugEnabled()) {
 						System.out.printf("newerwithdependency: found %s dependent on %s\n", f.toString(), dependName);
+					}
+					
 					String className = javaClass.getName();
 					int nested = className.indexOf('$');
 					if (nested > 0)
@@ -128,17 +131,16 @@ public class newerwithdependency extends newerthan {
 					break;
 				}
 		}
+		
 		// can be joint in one step
 		lsf = classPath.listFiles(new FileFilter() {
 			public boolean accept(File pathname) {
 				return pathname.isDirectory();
 			}
 		});
-		for (File f : lsf)
+		for (File f : lsf) {
 			processDirectory(result, f, srcPath, dependencies, srcExt, dstExt);
-	}
-	
-	public static void main(String[] args) {
+		}
 	}
 	
 }

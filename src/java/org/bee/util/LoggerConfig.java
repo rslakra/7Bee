@@ -33,8 +33,6 @@ import java.util.logging.Level;
 
 /**
  * @author dmitriy
- *
- * 
  */
 public class LoggerConfig extends Properties {
 	

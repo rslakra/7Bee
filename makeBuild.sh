@@ -14,6 +14,10 @@ export JAVA_HOME=$(/usr/libexec/java_home)
 mkdir -p "${JSCH_HOME}"
 mkdir -p "${JDEPEND_HOME}/lib"
 echo
+echo "Cleaning JDepend"
+rm -rf ${JDEPEND_HOME}/lib/*.*
+
+echo
 echo "Compile JDepend"
 echo
 $JAVA_HOME/bin/javac -sourcepath ${JDEPEND_HOME}/src/java -d ${JDEPEND_HOME}/lib ${JDEPEND_HOME}/src/java/jdepend/framework/*.java
@@ -26,12 +30,17 @@ if [ ! -e "$JSCH" ]; then
 fi
 
 echo
+echo "Cleaning JDepend"
+rm -rf ./lib/*.*
+
+echo
 echo "Compile 7Bee"
 echo
 echo ./lib:${JDEPEND_HOME}/lib:$JSCH
 timestamp=$(date +"%c")
-echo "package org.bee; public class CompileStamp { public static final String getStamp() { return  \"$timestamp\"; }}" > src/java/org/bee/CompileStamp.java 
-$JAVA_HOME/bin/javac -source 1.6 -target 1.6 -classpath ./lib:${JDEPEND_HOME}/lib:$JSCH -sourcepath src/java -d lib src/java/org/bee/processor/*.java src/java/org/bee/util/*.java src/java/org/bee/oper/*.java src/java/org/bee/func/*.java
+#echo "package org.bee; public class CompileStamp { public static final String getStamp() { return  \"$timestamp\"; }}" > src/java/org/bee/CompileStamp.java 
+#$JAVA_HOME/bin/javac -source 1.6 -target 1.6 -classpath ./lib:${JDEPEND_HOME}/lib:$JSCH -sourcepath src/java -d lib src/java/org/bee/processor/*.java src/java/org/bee/util/*.java src/java/org/bee/oper/*.java src/java/org/bee/func/*.java
+$JAVA_HOME/bin/javac -classpath ./lib:${JDEPEND_HOME}/lib:$JSCH -sourcepath src/java -d lib src/java/org/bee/processor/*.java src/java/org/bee/util/*.java src/java/org/bee/oper/*.java src/java/org/bee/func/*.java
 
 rc=$?; if [ $rc != 0 ]; then exit $rc; fi
 echo "build result JAR"

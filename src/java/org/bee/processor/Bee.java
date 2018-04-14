@@ -17,8 +17,6 @@ import org.bee.util.InfoHolder;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-// import static org.bee.processor.Instruction.*;
-
 /**
  * @author <a href="mailto:dmitriy@mochamail.com">Dmitriy Rogatkin</a>
  */
@@ -27,15 +25,17 @@ public class Bee extends AbstractBlock {
 	public static final String DEDICATION = "To my children Anna, Phillip, and Elizabeth";
 	
 	protected String homeDirectory;
-	
 	protected String lastTarget;
-	
 	protected List<Instruction> children;
-	
 	protected static Configuration<Bee> configuration;
 	
+	/**
+	 * 
+	 * @param args
+	 */
 	public static void main(String... args) {
-		new Processor(configuration = (Configuration<Bee>) Configuration.readConfiguration(args)).process();
+		configuration = Configuration.readConfiguration(args);
+		new Processor(configuration).process();
 	}
 	
 	public Bee() {
@@ -46,74 +46,116 @@ public class Bee extends AbstractBlock {
 		// TODO: important consider to completely re-evaluate everything before
 		// processing next target
 		InfoHolder result = null;
-		if (configuration.targets.size() == 0)
-			if (lastTarget != null)
+		if (configuration.targets.size() == 0) {
+			if (lastTarget != null) {
 				configuration.targets.add(lastTarget);
-			else
+			} else {
 				logger.info("No targets found.");
+			}
+		}
 		logger.info("Targets: " + configuration.targets);
 		// TODO: an option to go through all targets
 		for (String target : configuration.targets) {
 			InfoHolder<String, InfoHolder, Object> th = getNameSpace().lookup(target);
 			if (th != null) {
-				if (children != null)
-					for (Instruction i : children)
+				if (children != null) {
+					for (Instruction i : children) {
 						i.eval();
+					}
+				}
 				result = ((Target) th.getValue().getValue()).eval();
-			} else
+			} else {
 				logger.severe("No target '" + target + "' found.");
+			}
 		}
+		
 		return result;
 	}
 	
+	/**
+	 * 
+	 * @param child
+	 * @see org.bee.processor.AbstractValue#childDone(org.bee.processor.Instruction)
+	 */
 	public void childDone(Instruction child) {
 		if (child instanceof Target) {
 			lastTarget = child.getName();
 			getNameSpace().inScope(new InfoHolder<String, InfoHolder, Object>(child.getName(), new InfoHolder<String, Target, Object>(child.getName(), (Target) child)));
-			if (printTargetHelp())
+			if (printTargetHelp()) {
 				System.out.printf("  %s - %s%n", lastTarget, ((Target) child).getComment() == null ? "" : ((Target) child).getComment());
+			}
 		} else {
 			child.eval();
-			if (children != null)
+			if (children != null) {
 				children.add(child);
+			}
+			
 			// TODO can it be homeDirectory var name so revalidate it in
 			// RESERVE_NAME_DIR
 			// else TODO why it can be?
 		}
 	}
 	
+	/**
+	 * 
+	 * @param uri
+	 * @param localName
+	 * @param qName
+	 * @param attributes
+	 * @throws SAXException
+	 * @see org.bee.processor.AbstractBlock#startElement(java.lang.String,
+	 *      java.lang.String, java.lang.String, org.xml.sax.Attributes)
+	 */
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 		homeDirectory = attributes.getValue("", ATTR_DIR);
 		if (configuration.isReevaluate())
 			children = new ArrayList<Instruction>(32);
 		List<String> args = configuration.getArguments(this);
-		if (args != null)
+		if (args != null) {
 			getNameSpace().inScope(new InfoHolder<String, InfoHolder, Object>(RESERVE_NAME_ARGS, new InfoHolder<String, String, List<String>>(RESERVE_NAME_ARGS, args.toString(), args)));
+		}
+		
 		// logger.info("Run args:"+args);
 		System.getProperties().putAll(configuration.getDefines(this));
 		Properties properties = configuration.getExtraProperties(this);
-		if (properties != null)
+		if (properties != null) {
 			System.getProperties().putAll(properties);
+		}
+		
 		// logger.config("Run props:"+configuration.getDefines(this));
 		// TODO consider homeDirectory AS NAME OF VARIABLE ESPECIALLY IF CAN"T
 		// BE resolved as a directory
 		// with late definition
-		if (homeDirectory != null)
-			getNameSpace().inScope(new InfoHolder<String, InfoHolder, Object>(RESERVE_NAME_DIR, new InfoHolder<String, String, Object>(RESERVE_NAME_DIR, homeDirectory)));
-		if (configuration.isNoInput())
-			getNameSpace().inScope(new InfoHolder<String, InfoHolder, Object>(RESERVE_OPTION_NOINPUT, new InfoHolder(RESERVE_OPTION_NOINPUT, RESERVE_OPTION_NOINPUT)));
-		getNameSpace().inScope(new InfoHolder<String, InfoHolder, Object>(RESERVE_BUILD_FILE, new InfoHolder(RESERVE_BUILD_FILE, configuration.beeFile)));
+		if (homeDirectory != null) {
+			getNameSpace().inScope(new InfoHolder(RESERVE_NAME_DIR, new InfoHolder(RESERVE_NAME_DIR, homeDirectory)));
+		}
+		
+		if (configuration.isNoInput()) {
+			getNameSpace().inScope(new InfoHolder(RESERVE_OPTION_NOINPUT, new InfoHolder(RESERVE_OPTION_NOINPUT, RESERVE_OPTION_NOINPUT)));
+		}
+		
+		getNameSpace().inScope(new InfoHolder(RESERVE_BUILD_FILE, new InfoHolder(RESERVE_BUILD_FILE, configuration.beeFile)));
 		List<URL> extCP = configuration.getExtendClassPath();
 		if (extCP != null) {
 			StringBuffer classPath = new StringBuffer();
-			for (URL url : extCP)
+			for (URL url : extCP) {
 				classPath.append(url.getFile().toString().substring(1)).append(File.pathSeparatorChar);
-			getNameSpace().inScope(new InfoHolder<String, InfoHolder, Object>(RESERVE_CLASS_LIB, new InfoHolder<String, String, List<URL>>(RESERVE_CLASS_LIB, classPath.toString(), extCP)));
+			}
+			getNameSpace().inScope(new InfoHolder(RESERVE_CLASS_LIB, new InfoHolder(RESERVE_CLASS_LIB, classPath.toString(), extCP)));
 		}
 		type = Type.project;
 		super.startElement(uri, localName, qName, attributes);
 	}
 	
+	/**
+	 * 
+	 * @param uri
+	 * @param localName
+	 * @param qName
+	 * @throws SAXException
+	 * @see org.bee.processor.AbstractValue#endElement(java.lang.String,
+	 *      java.lang.String, java.lang.String)
+	 */
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		super.endElement(uri, localName, qName);
 		if (printTargetHelp() == false) {
@@ -125,6 +167,10 @@ public class Bee extends AbstractBlock {
 		}
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
 	private boolean printTargetHelp() {
 		return configuration.isTargetHelp();
 	}

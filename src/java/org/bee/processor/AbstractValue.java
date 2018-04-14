@@ -20,8 +20,10 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * @author <a href="mailto:dmitriy@mochamail.com">Dmitriy Rogatkin</a>
+ * @author <a href="rohtash.singh@gmail.com">Rohtash Singh Lakra</a>
  */
 public abstract class AbstractValue extends DefaultHandler implements Instruction {
+	
 	public enum Type {
 		variable,
 		file,
@@ -39,6 +41,9 @@ public abstract class AbstractValue extends DefaultHandler implements Instructio
 		repo_artifact
 	};
 	
+	protected final static String TYPE_RESERVED = "then|else|project";
+	protected final static String TYPE_SHORTCUTS = "variable|directory|number|environment|property";
+	
 	protected String xpath;
 	protected String value;
 	protected String variable;
@@ -47,8 +52,6 @@ public abstract class AbstractValue extends DefaultHandler implements Instructio
 	protected StringBuffer valueBuffer;
 	protected Type type;
 	protected Locator locator;
-	protected final static String TYPE_RESERVED = "then|else|project";
-	protected final static String TYPE_SHORTCUTS = "variable|directory|number|environment|property";
 	
 	public AbstractValue(String xpath) {
 		this.xpath = xpath;
@@ -87,10 +90,13 @@ public abstract class AbstractValue extends DefaultHandler implements Instructio
 		Instruction instruction = this;
 		while (result == null && instruction != null) {
 			NameSpace ns = instruction.getNameSpace();
-			if (ns != null)
+			if (ns != null) {
 				result = ns.lookup(lookName);
+			}
+			
 			instruction = instruction.getParent();
 		}
+		
 		return result;
 	}
 	

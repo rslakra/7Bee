@@ -29,9 +29,16 @@ public class Parameter extends Value {
 			logger.severe("Not allowed here /" + child);
 	}
 	
+	/**
+	 * 
+	 * @return
+	 * @see org.bee.processor.Value#eval()
+	 */
 	public InfoHolder eval() {
-		if (calculatedValue != null)
+		if (calculatedValue != null) {
 			return calculatedValue.eval();
+		}
+		
 		return super.eval();
 	}
 }

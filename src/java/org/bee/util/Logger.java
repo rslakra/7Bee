@@ -2,9 +2,9 @@
 // Bee Copyright (c) 2004 Dmitriy Rogatkin
 package org.bee.util;
 
-/** @author <a href="mailto:dmitriy@mochamail.com">Dmitriy Rogatkin</a>
+/**
+ * @author <a href="mailto:dmitriy@mochamail.com">Dmitriy Rogatkin</a>
  */
-//import java.util.logging.Logger;
 import java.util.logging.LogManager;
 
 public class Logger {

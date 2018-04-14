@@ -5,9 +5,11 @@ package org.bee.func;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
+
+import jdepend.framework.JavaHelper;
 
 /**
  * @author <a href="dmitriy@mochamail.com">Dmitriy Rogatkin </a>
@@ -37,41 +39,51 @@ public class newerthan {
 		String destMask = extractFile(dstPath);
 		srcPath = extractPath(srcPath);
 		dstPath = extractPath(dstPath);
-		if (DEBUG_)
+		if (JavaHelper.isDebugEnabled()) {
+			
 			System.out.printf("newerthan:debug: sp %s sm %s dp %s dm %s in %s\n", new File(srcPath).getAbsolutePath(), srcMask, dstPath, destMask, new File("./").getAbsolutePath());
+		}
 		processDirectory(result, new File(srcPath)/* .getAbsoluteFile() */, srcPath, srcMask, dstPath, destMask);
-		if (DEBUG_)
+		if (JavaHelper.isDebugEnabled()) {
+			
 			System.out.printf("newerthan:debug: result: %s\n", result);
+		}
 		return result;
 	}
 	
 	protected static String normalize(String s) {
 		assert File.separatorChar == '/' || File.separatorChar == '\\';
 		char tc = '\\';
-		if (File.separatorChar == tc)
+		if (File.separatorChar == tc) {
 			tc = '/';
+		}
 		return s.replace(tc, File.separatorChar);
 	}
 	
 	protected static String extractPath(String s) {
 		int p = s.lastIndexOf(File.separatorChar);
-		if (p < 0)
+		if (p < 0) {
 			return "." + File.separatorChar;
+		}
+		
 		return s.substring(0, p);
 	}
 	
 	protected static String extractFile(String s) {
 		int p = s.lastIndexOf(File.separatorChar);
-		if (p < 0)
+		if (p < 0) {
 			return s;
+		}
+		
 		return s.substring(p + 1);
 	}
 	
 	protected static void processDirectory(List<String> result, File path, String srcPath, String srcMask, String destPath, String destMask) {
 		if (path.exists() == false || path.isDirectory() == false)
 			return;
-		if (DEBUG_)
+		if (JavaHelper.isDebugEnabled()) {
 			System.out.printf("newerthan:debug: process %s\n", path);
+		}
 		File[] lsf = path.listFiles(new SmartFileFilter(srcMask, srcPath, destPath, destMask));
 		for (File f : lsf)
 			result.add(f.getAbsolutePath());
@@ -80,8 +92,10 @@ public class newerthan {
 				return pathname.isDirectory();
 			}
 		});
-		for (File f : lsf)
+		
+		for (File f : lsf) {
 			processDirectory(result, f, srcPath, srcMask, destPath, destMask);
+		}
 	}
 	
 	protected static class SmartFileFilter implements FileFilter {
@@ -117,13 +131,15 @@ public class newerthan {
 			// files, so every of them should count (consider only top level,
 			// not nested classes
 			String n = pathname.getName();
-			if (DEBUG_)
+			if (JavaHelper.isDebugEnabled()) {
 				System.out.printf("newerthan:Path to accept %s, current parent len %d, mask len %d\n", n, sl, ml);
+			}
 			if (p.matcher(n).matches()) {
 				n = n.substring(0, n.length() - ml);
 				String parent = pathname.getParent();
-				if (DEBUG_)
+				if (JavaHelper.isDebugEnabled()) {
 					System.out.printf("newerthan:Parent %s, src %s\n", parent, srcPath);
+				}
 				assert parent.indexOf(srcPath) == 0;
 				parent = parent.substring(sl);
 				File destFile = new File(destPath + parent, n + destMask);
@@ -136,5 +152,4 @@ public class newerthan {
 		}
 	}
 	
-	protected static final boolean DEBUG_ = false;
 }

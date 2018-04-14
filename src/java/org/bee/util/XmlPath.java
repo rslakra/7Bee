@@ -15,13 +15,25 @@ public class XmlPath extends Stack<String> {
 	/** serialVersionUID */
 	private static final long serialVersionUID = 1L;
 	
+	/**
+	 * 
+	 * @return
+	 * @see java.util.Vector#toString()
+	 */
 	public String toString() {
 		String result = "/";
-		for (String element : this)
+		for (String element : this) {
 			result += element + '/';
+		}
+		
 		return result;
 	}
 	
+	/**
+	 * 
+	 * @param xpath
+	 * @return
+	 */
 	public static XmlPath wildCard(XmlPath xpath) {
 		XmlPath result = new XmlPath();
 		boolean startAdd = false;
@@ -30,18 +42,31 @@ public class XmlPath extends Stack<String> {
 				if (startAdd == false) {
 					result.push("*");
 					startAdd = true;
-				} else
+				} else {
 					result.push(element);
+				}
 			// else Exception
 		}
+		
 		return result;
 	}
 	
 	public static XmlPath fromString(String xpath) {
 		XmlPath result = new XmlPath();
-		for (String element : xpath.split("/"))
+		for (String element : xpath.split("/")) {
 			result.push(element);
+		}
 		return result;
 		
 	}
+	
+    /**
+     * Tests if this stack is empty.
+     *
+     * @return  <code>true</code> if and only if this stack contains
+     *          no items; <code>false</code> otherwise.
+     */
+    public boolean empty() {
+        return size() == 0;
+    }
 }

@@ -1,7 +1,9 @@
 package jdepend.framework;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * The <code>AbstractParser</code> class is the base
@@ -14,8 +16,7 @@ import java.util.*;
 
 public abstract class AbstractParser {
 	
-	private ArrayList parseListeners;
-	
+	private ArrayList<ParserListener> parseListeners;
 	private PackageFilter filter;
 	
 	public static boolean DEBUG = false;
@@ -32,49 +33,57 @@ public abstract class AbstractParser {
 	 * Constructs an <code>AbstractParser</code> instance
 	 * with the specified package filter.
 	 *
-	 * @param filter Package filter.
+	 * @param filter
+	 *            Package filter.
 	 */
 	public AbstractParser(PackageFilter filter) {
 		setFilter(filter);
-		parseListeners = new ArrayList();
+		parseListeners = new ArrayList<ParserListener>();
 	}
 	
 	/**
 	 * Registers the specified parser listener.
 	 *
-	 * @param listener Parser listener.
+	 * @param listener
+	 *            Parser listener.
 	 */
 	public void addParseListener(ParserListener listener) {
 		parseListeners.add(listener);
 	}
-      
-    /**
-     * Parses the specified input stream and returns 
-     * a representative <code>JavaClass</code> instance.
-     * <p>
-     * Registered parser listeners are informed that the
-     * resulting <code>JavaClass</code> was parsed.
-     *
-     * @param is Input stream to parse.
-     * @return Java class.
-     * @throws IOException If the input stream could not be parsed.
-     */  
-    public abstract JavaClass parse(InputStream is) 
-        throws IOException;
 	
 	/**
-	 * Informs registered parser listeners that the 
+	 * Parses the specified input stream and returns
+	 * a representative <code>JavaClass</code> instance.
+	 * <p>
+	 * Registered parser listeners are informed that the
+	 * resulting <code>JavaClass</code> was parsed.
+	 *
+	 * @param is
+	 *            Input stream to parse.
+	 * @return Java class.
+	 * @throws IOException
+	 *             If the input stream could not be parsed.
+	 */
+	public abstract JavaClass parse(InputStream is) throws IOException;
+	
+	/**
+	 * Informs registered parser listeners that the
 	 * specified <code>JavaClass</code> was parsed.
 	 *
-	 * @param jClass Parsed Java class.
+	 * @param jClass
+	 *            Parsed Java class.
 	 */
 	protected void onParsedJavaClass(JavaClass jClass) {
-		Iterator i = parseListeners.iterator();
-		while (i.hasNext()) {
-			((ParserListener)i.next()).onParsedJavaClass(jClass);
+		Iterator<ParserListener> itr = parseListeners.iterator();
+		while (itr.hasNext()) {
+			itr.next().onParsedJavaClass(jClass);
 		}
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
 	protected PackageFilter getFilter() {
 		if (filter == null) {
 			setFilter(new PackageFilter());
@@ -82,11 +91,19 @@ public abstract class AbstractParser {
 		
 		return filter;
 	}
-    
-    protected void setFilter(PackageFilter filter) {
-        this.filter = filter;
-    }
 	
+	/**
+	 * 
+	 * @param filter
+	 */
+	protected void setFilter(PackageFilter filter) {
+		this.filter = filter;
+	}
+	
+	/**
+	 * 
+	 * @param message
+	 */
 	protected void debug(String message) {
 		if (DEBUG) {
 			System.err.println(message);

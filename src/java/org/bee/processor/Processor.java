@@ -30,17 +30,21 @@ import org.xml.sax.helpers.DefaultHandler;
  * 
  */
 public final class Processor {
-	protected Configuration configuration;
 	
+	protected Configuration<Bee> configuration;
 	protected long startStamp;
+	protected Map<XmlPath, Class<?>> parseRegistry;
 	
-	protected Map<XmlPath, Class> parseRegistry;
-	
-	public Processor(Configuration configuration) {
+	/**
+	 * 
+	 */
+	public Processor(Configuration<Bee> configuration) {
 		this.configuration = configuration;
-		if (configuration.exitCode != null)
+		if (configuration.exitCode != null) {
 			System.exit(configuration.exitCode);
-		parseRegistry = new HashMap<XmlPath, Class>();
+		}
+		
+		parseRegistry = new HashMap<XmlPath, Class<?>>();
 		for (Object o : configuration.descriptors) {
 			InfoHolder<String, String, Integer> descriptor = (InfoHolder<String, String, Integer>) o;
 			try {
@@ -69,8 +73,9 @@ public final class Processor {
 				Logger.logger.log(FINE, "** Parsing exception line {0}:col {1} id {2}", new Object[] { ((SAXParseException) saxe).getLineNumber(), ((SAXParseException) saxe).getColumnNumber(), ((SAXParseException) saxe).getSystemId() });
 			} else if (saxe instanceof SAXException && ((SAXException) saxe).getException() != null)
 				Logger.logger.log(FINER, "", ((SAXException) saxe).getException());
-			else
+			else {
 				Logger.logger.log(FINEST, "Stack trace", saxe);
+			}
 		} catch (ProcessException pe) {
 			logger.info("Aborted in " + Misc.formatTime(System.currentTimeMillis() - startStamp));
 			System.exit(pe.exitCode);
@@ -79,9 +84,8 @@ public final class Processor {
 		// System.out.println("--"+parseRegistry.get(XmlPath.fromString("*/variable")));
 	}
 	
-	class ProcessHandler extends DefaultHandler {
+	final class ProcessHandler extends DefaultHandler {
 		XmlPath path;
-		
 		Stack<Instruction> instrStack;
 		
 		public void startDocument() throws SAXException {
@@ -90,11 +94,21 @@ public final class Processor {
 			instrStack = new Stack<Instruction>();
 		}
 		
+		/**
+		 * 
+		 * @param uri
+		 * @param localName
+		 * @param qName
+		 * @param attributes
+		 * @throws SAXException
+		 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String,
+		 *      java.lang.String, java.lang.String, org.xml.sax.Attributes)
+		 */
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 			path.push(qName);
 			XmlPath workPath = path;
 			Instruction instruction = null;
-			Class instrClass;
+			Class<?> instrClass;
 			for (instrClass = parseRegistry.get(workPath); instrClass == null && workPath.empty() == false; workPath = XmlPath.wildCard(workPath))
 				instrClass = parseRegistry.get(workPath);
 			if (instrClass != null) {
