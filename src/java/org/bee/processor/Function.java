@@ -55,18 +55,18 @@ public class Function extends AbstractBlock {
 	 * @see org.bee.processor.Instruction#eval()
 	 */
 	public InfoHolder eval() {
-		logger.entering("func.eval", name);
+		logger.entering("Function:", "eval:" + name);
 		InfoHolder result = null;
 		// TODO :do everything on generic level and use Objects everywhere
 		Object[] callParameters = new Object[parameters.size()];
 		int lastSameType = 0;
 		for (int i = 0; i < callParameters.length; i++) {
 			Parameter param = parameters.get(i);
-			BeeHelper.debug("param:" + param);
+			logger.finest("param:" + param);
 			InfoHolder<String, String, Object> paramValue = param.eval();
 			if (paramValue != null) {
 				callParameters[i] = paramValue.getType();
-				logger.finest("callParameters[" + i + "]=" + callParameters[i]);
+				logger.finest("callParameters[" + i + "] = " + callParameters[i]);
 				if (callParameters[i] == null) {
 					callParameters[i] = paramValue.getValue();
 				}
@@ -102,15 +102,19 @@ public class Function extends AbstractBlock {
 							// TODO check if getHelp is in function to print
 							// usage
 						} else {
+							logger.finest("method:" + name + ", parameter:" + BeeHelper.toString(callParameters) + ", paramTypes:" + BeeHelper.toString(method.getParameterTypes()));
 							object = method.invoke(null, new Object[] { methodParameter });
 						}
 					} else {
+						logger.finest("method:" + name + ", parameter:" + BeeHelper.toString(callParameters) + ", paramTypes:" + BeeHelper.toString(method.getParameterTypes()));
 						object = method.invoke(null, methodParameter);
 					}
 				} else {
+					logger.finest("method:" + name + ", parameter:" + BeeHelper.toString(callParameters) + ", paramTypes:" + BeeHelper.toString(method.getParameterTypes()));
 					object = method.invoke(null, new Object[] { callParameters });
 				}
 			} else {
+				logger.finest("method:" + name + ", parameter:" + BeeHelper.toString(callParameters) + ", paramTypes:" + BeeHelper.toString(method.getParameterTypes()));
 				object = method.invoke(null, callParameters);
 			}
 			
@@ -118,7 +122,7 @@ public class Function extends AbstractBlock {
 				throw (ProcessException) object;
 			}
 			
-			logger.exiting("func.eval", object != null ? object.toString() : null);
+			logger.exiting("Function.eval", object != null ? object.toString() : null);
 			result = new InfoHolder<String, String, Object>(name, object == null ? null : (object instanceof Object[] ? Arrays./* deepT */toString((Object[]) object) : object.toString()), object);
 		} catch (IllegalArgumentException e) {
 			logger.severe("Illegal arguments at call of " + method + " with " + callParameters);

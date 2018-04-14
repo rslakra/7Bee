@@ -33,7 +33,7 @@ public class Target extends Expression {
 	}
 	
 	public InfoHolder eval() {
-		logger.entering("target", "eval:" + name);
+		logger.entering("Target:", "eval:" + name);
 		boolean needToEval = dependencies.size() == 0;
 		if (dir != null) {
 			InfoHolder<String, InfoHolder, Object> targetDir = lookupInChain(dir);
@@ -47,11 +47,12 @@ public class Target extends Expression {
 				// break;
 			}
 		}
+		
 		if (needToEval) {
 			/* return */
 			super.eval();
 		}
-		logger.exiting("target", "eval:" + name, (Boolean) needToEval);
+		logger.exiting("Target", "eval:" + name, (Boolean) needToEval);
 		return new InfoHolder<String, String, Boolean>(name, ((Boolean) needToEval).toString(), needToEval);
 	}
 	

@@ -25,12 +25,14 @@ public class cropname {
 		super();
 	}
 	
-	public static List<String> eval(String param1, String param2) {
-		return eval(param1, param2, "");
-	}
-	
-	public static List<String> eval(String param1, String param2, final String replaceTo) {
-		return eval(param1, param2, replaceTo, null);
+	/**
+	 * 
+	 * @param param1
+	 * @param param2
+	 * @return
+	 */
+	public static List<String> eval(String fileName, String regularExpression) {
+		return eval(fileName, regularExpression, "");
 	}
 	
 	/**
@@ -38,20 +40,31 @@ public class cropname {
 	 * @param param1
 	 * @param param2
 	 * @param replaceTo
+	 * @return
+	 */
+	public static List<String> eval(String fileName, String regularExpression, final String replaceTo) {
+		return eval(fileName, regularExpression, replaceTo, null);
+	}
+	
+	/**
+	 * 
+	 * @param param1
+	 * @param regularExpression
+	 * @param replaceTo
 	 * @param all
 	 * @return
 	 */
-	public static List<String> eval(String param1, String param2, final String replaceTo, final String all) {
-		final String mask = param2.replaceAll("\\?", "[^/\\]").replaceAll("\\*", "[^/\\]*");
+	public static List<String> eval(String fileName, String regularExpression, final String replaceTo, final String all) {
 		final List<String> result = new ArrayList<String>();
-		if (param1.indexOf('*') < 0 && param1.indexOf('?') < 0 || param1.indexOf('\n') >= 0) {
+		final String mask = regularExpression.replaceAll("\\?", "[^/\\]").replaceAll("\\*", "[^/\\]*");
+		if (fileName.indexOf('*') < 0 && fileName.indexOf('?') < 0 || fileName.indexOf('\n') >= 0) {
 			if (all == null) {
-				result.add(param1.replaceFirst(mask, replaceTo));
+				result.add(fileName.replaceFirst(mask, replaceTo));
 			} else {
-				result.add(param1.replaceAll(mask, replaceTo));
+				result.add(fileName.replaceAll(mask, replaceTo));
 			}
 		} else {
-			final String[] pe = splitBy(param1);
+			final String[] pe = splitBy(fileName);
 			// TODO: pe.length <= 1
 			if (pe.length > 1) {
 				new File(pe[0]).listFiles(new FileFilter() {

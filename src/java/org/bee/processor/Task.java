@@ -78,7 +78,7 @@ public class Task extends Function {
 	 * @see org.bee.processor.Function#eval()
 	 */
 	public InfoHolder eval() {
-		// logger.entering("task","eval");
+		logger.entering("Task:", "eval:" + name);
 		String pathValue = path == null ? null : lookupStringValue(path);
 		InfoHolder result = null;
 		InfoHolder<String, InfoHolder, Object> extCPVal = lookupOnTop(RESERVE_CLASS_LIB);
